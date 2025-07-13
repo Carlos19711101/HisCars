@@ -44,13 +44,13 @@ const TodoScreen: React.FC<TodoScreenProps> = ({ navigation }) => {
     'https://cdn-icons-png.flaticon.com/512/3652/3652191.png',
     'https://cdn-icons-png.flaticon.com/128/4606/4606919.png',
     'https://cdn-icons-png.flaticon.com/128/805/805680.png',
-    'https://cdn-icons-png.flaticon.com/128/1048/1048334.png',
+    'https://cdn-icons-png.flaticon.com/128/741/741460.png',
     'https://cdn-icons-png.flaticon.com/128/1133/1133816.png',
     'https://cdn-icons-png.flaticon.com/128/11133/11133672.png'
   ];
 
   const originalCards: CardItem[] = [
-    { id: '1', title: 'Profile', subtitle: 'Motocicleta \n Datos  ', color: '#33ee0d', screenName: 'Profile', image: demoImages[3] },
+    { id: '1', title: 'Profile', subtitle: 'Datos \n Vehículo  ', color: '#33ee0d', screenName: 'Profile', image: demoImages[3] },
     { id: '2', title: 'Daily', subtitle: 'Actividades \n Diarias', color: '#eb0dee', screenName: 'Daily', image: demoImages[0] },
     { id: '3', title: 'Preventive', subtitle: 'Mantenimiento preventivo', color: '#0deeda', screenName: 'Preventive', image: demoImages[1] },
     { id: '4', title: 'Mantenimiento', subtitle: 'General ', color: '#090FFA', screenName: 'General', image: demoImages[5] },
@@ -117,7 +117,10 @@ const TodoScreen: React.FC<TodoScreenProps> = ({ navigation }) => {
       />
       
       <LinearGradient 
-        colors={['#090FFA','#88D3CE', '#6E45E2']} 
+       colors={['#000000', '#3A0CA3', '#7209B7', '#F72585']}
+         locations={[0, 0.3, 0.6, 1]}   // Misma distribución porcentual
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
         style={[styles.containerGlobal, { paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }]}
       >
         <TouchableOpacity 

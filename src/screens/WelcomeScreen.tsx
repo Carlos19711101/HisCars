@@ -1,7 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, StatusBar, Alert, BackHandler, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, StatusBar, Alert, BackHandler, Platform, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AntDesign } from '@expo/vector-icons';
+
+const { width, height } = Dimensions.get('window');
 
 const WelcomeScreen = ({ navigation }: any) => {
   const exitApp = () => {
@@ -22,12 +24,10 @@ const WelcomeScreen = ({ navigation }: any) => {
     );
   };
 
-  // Calcula la altura segura para el StatusBar
   const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight : 0;
 
   return (
     <>
-      {/* StatusBar transparente con texto claro */}
       <StatusBar
         translucent={true}
         backgroundColor="transparent"
@@ -35,19 +35,21 @@ const WelcomeScreen = ({ navigation }: any) => {
       />
       
       <LinearGradient
-        colors={['#090FFA', '#6E45E2', '#88D3CE']}
+        colors={['#000000', '#3A0CA3', '#F72585']}
+        locations={[0, 0.6, 1]} // Aquí implementamos los porcentajes
         style={[styles.container, { paddingTop: STATUS_BAR_HEIGHT }]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        {/* Botón de salida - Ajustado para considerar el StatusBar */}
+        {/* Botón de salida */}
         <TouchableOpacity 
-          style={[styles.exitButton, { top: (STATUS_BAR_HEIGHT || 0 )+ 20 }]} 
+          style={[styles.exitButton, { top: (STATUS_BAR_HEIGHT || 0) + 20 }]} 
           onPress={exitApp}
         >
           <AntDesign name="logout" size={24} color="white" />
         </TouchableOpacity>
         
+        {/* Contenido principal */}
         <View style={styles.content}>
           <Text style={styles.title}>¡Bienvenido!</Text>
           <Text style={styles.subtitle}>Descubre una experiencia única diseñada para ti</Text>
@@ -57,13 +59,22 @@ const WelcomeScreen = ({ navigation }: any) => {
             onPress={() => navigation.navigate('AuthScreen')}
             activeOpacity={0.7}
           >
-            <Text style={styles.buttonText}>Comenzar</Text>
+            <LinearGradient
+              colors={['#FFFFFF', '#E0E0E0']}
+              style={styles.buttonGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
+              <Text style={styles.buttonText}>Comenzar</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
 
-        {/* Texto "producido por" en la parte inferior */}
-        <Text style={styles.footerText}>Respaldado por:</Text>
-        <Text style={styles.footer1Text}>Global Solutions IA</Text>
+        {/* Footer */}
+        <View style={styles.footerContainer}>
+          <Text style={styles.footerText}>Respaldado por:</Text>
+          <Text style={styles.footerBrandText}>Global Solutions IA</Text>
+        </View>
       </LinearGradient>
     </>
   );
@@ -78,42 +89,49 @@ const styles = StyleSheet.create({
   content: {
     padding: 20,
     alignItems: 'center',
-    width: '80%',
+    width: '90%',
+    marginBottom: height * 0.15, // Espacio para el footer
   },
   title: {
-    fontSize: 30,
+    fontSize: 32,
     fontWeight: 'bold',
     color: 'white',
     marginBottom: 15,
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 3,
+    textShadowRadius: 5,
   },
   subtitle: {
     fontSize: 18,
-    color: 'white',
+    color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
     marginBottom: 40,
     lineHeight: 24,
+    paddingHorizontal: 20,
   },
   button: {
-    backgroundColor: '#cacbd6',
-    paddingVertical: 15,
-    paddingHorizontal: 60,
+    width: '80%',
     borderRadius: 30,
+    overflow: 'hidden', // Para que el gradiente del botón no se salga
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 9,
+      height: 4,
     },
-    shadowOpacity: 0.27,
+    shadowOpacity: 0.3,
     shadowRadius: 4.65,
-    elevation: 6,
+    elevation: 8,
+  },
+  buttonGradient: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonText: {
-    color: '#6E45E2',
+    color: '#3A0CA3',
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   exitButton: {
     position: 'absolute',
@@ -121,38 +139,22 @@ const styles = StyleSheet.create({
     zIndex: 10,
     padding: 10,
   },
-   footerContainer: {
+  footerContainer: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'transparent', // Fondo transparente
-    paddingVertical: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  footerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    bottom: 90,
     width: '100%',
-    paddingHorizontal: 20,
+    alignItems: 'center',
   },
   footerText: {
-    position: 'absolute',
-    bottom: 100,
-    color: 'rgba(255, 255, 255, 0.5)',
-    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 14,
+    marginBottom: 10,
     textAlign: 'center',
-    width: '100%',
   },
-  footer1Text: {
-    position: 'absolute',
-    bottom: 70,
-    color: 'rgba(255, 255, 255, 0.7)',
+  footerBrandText: {
+    color: 'rgba(255, 255, 255, 0.9)',
     fontSize: 18,
     fontWeight: 'bold',
-    textAlign: 'center',
-    width: '100%',
   },
 });
 
