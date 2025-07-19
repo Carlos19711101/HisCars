@@ -6,11 +6,11 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "backgroundColor": "transparent",
+    "backgroundColor": "#00000000",
     "splash": {
       "image": "./assets/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "transparent"
+      "backgroundColor": "#00000000"
     },
     "plugins": [
       [
@@ -24,7 +24,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "backgroundColor": "transparent",
+      "backgroundColor": "#00000000",
       "infoPlist": {
         "NSCameraUsageDescription": "Esta aplicación necesita acceso a la cámara para tomar fotos.",
         "NSMicrophoneUsageDescription": "Esta aplicación necesita acceso al micrófono para grabar audio."
@@ -33,9 +33,9 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "transparent"
+        "backgroundColor": "#00000000"
       },
-      "package": "com.carlosvelez.hismoto",
+      "package": "com.carlosvelez.hiscars",
       "versionCode": 2,
       "permissions": [
         "android.permission.CAMERA",
@@ -43,12 +43,17 @@
       ],
       "softwareKeyboardLayoutMode": "pan",
       "statusBar": {
-        "backgroundColor": "transparent",
+        "backgroundColor": "#00000000",
         "translucent": true
       }
     },
     "web": {
       "favicon": "./assets/icon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "f4ef5a45-da0f-42af-b4fc-cd05f0188750"
+      }
     }
   }
 }
