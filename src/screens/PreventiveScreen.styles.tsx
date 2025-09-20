@@ -138,7 +138,7 @@ const styles = StyleSheet.create<Styles>({
     fontWeight: 'bold',
     color: 'white',
     marginBottom: 30,
-    marginTop: 30,
+    marginTop: 10,
     right: -5,
   },
     footerContainer: {

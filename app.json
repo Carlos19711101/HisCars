@@ -32,7 +32,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
+        "foregroundImage": "./assets/icon-adactative.png",
         "backgroundColor": "#00000000"
       },
       "package": "com.carlosvelez.hiscars",

@@ -39,7 +39,7 @@ const styles = StyleSheet.create<Styles>({
   backButton: {
     position: 'absolute',
     top: 40,
-    left: 30,
+    left: 40,
     zIndex: 10,
   },
   entriesList: {
@@ -48,8 +48,8 @@ const styles = StyleSheet.create<Styles>({
   entryContainer: {
     backgroundColor: 'rgba(43, 202, 213, 0.14)',
     borderRadius: 10,
-    padding: 15,
-    marginHorizontal: 15,
+    padding: 5,
+    marginHorizontal: 8,
     marginVertical: 8,
     position: 'relative',
   },
@@ -62,9 +62,11 @@ const styles = StyleSheet.create<Styles>({
   entryDate: {
     color: '#fff',
     fontSize: 12,
+    left: 25,
   },
   deleteButton: {
     padding: 5,
+    right: 10,
   },
   entryText: {
     fontSize: 16,
@@ -73,9 +75,9 @@ const styles = StyleSheet.create<Styles>({
   },
   entryImage: {
     width: '100%',
-    height: 200,
+    height: 400,
     borderRadius: 8,
-    marginTop: 10,
+    marginTop: 8,
   },
   timelineConnector: {
     position: 'absolute',
@@ -130,11 +132,11 @@ const styles = StyleSheet.create<Styles>({
     height: 20,
   },
   title: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: 'bold',
     color: 'white',
-    marginBottom: 30,
-    marginTop: 30,
+    marginBottom: 10,
+    marginTop: 5,
     right: -5,
   },
     footerContainer: {

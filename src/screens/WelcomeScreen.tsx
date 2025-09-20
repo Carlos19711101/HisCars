@@ -56,7 +56,7 @@ const WelcomeScreen = ({ navigation }: any) => {
           
           <TouchableOpacity 
             style={styles.button}
-            onPress={() => navigation.navigate('AuthScreen')}
+            onPress={() => navigation.navigate('Todo')}
             activeOpacity={0.7}
           >
             <LinearGradient

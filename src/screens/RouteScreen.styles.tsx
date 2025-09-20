@@ -55,7 +55,7 @@ const styles = StyleSheet.create<Styles>({
   },
   backButtonIcon: {
     marginLeft: 0,
-    marginTop: -5,
+    marginTop: 5,
   },
   entriesList: {
     paddingBottom: 20,
@@ -146,7 +146,7 @@ const styles = StyleSheet.create<Styles>({
     fontWeight: 'bold',
     color: 'white',
     marginBottom: 10,
-    marginTop: 10,
+    marginTop: 5,
   },
   cameraModalButton: {
     position: 'absolute',
