@@ -11,7 +11,7 @@ import {
   Alert,
   Modal,
   StatusBar,
-  SafeAreaView
+  SafeAreaView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
@@ -21,11 +21,27 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CameraComponent, { CameraComponentRef } from '../components/CameraComponent';
 import styles from './RouteScreen.styles';
 
+import { agentService } from '../service/agentService';
+
 type JournalEntry = {
   id: string;
   text: string;
   date: Date;
   image?: string;
+};
+
+// Aquí deberías implementar o importar tus funciones reales de carga
+const cargarRutasGuardadas = async (): Promise<any[]> => {
+  // Ejemplo: carga desde AsyncStorage o API
+  return [];
+};
+const cargarViajesRecientes = async (): Promise<any[]> => {
+  // Ejemplo: carga desde AsyncStorage o API
+  return [];
+};
+// Ejemplo función para calcular distancia total que debes implementar
+const calcularDistanciaTotal = (trips: any[]): number => {
+  return trips.reduce((acc, trip) => acc + (trip.distance || 0), 0);
 };
 
 const STORAGE_KEY = '@journal_entries_route';
@@ -39,8 +55,13 @@ const RouteScreen = ({ navigation }: any) => {
   const [cameraVisible, setCameraVisible] = useState(false);
   const cameraRef = useRef<CameraComponentRef>(null);
 
+  // Estado para rutas y viajes, usados para la integración del agente
+  const [savedRoutes, setSavedRoutes] = useState<any[]>([]);
+  const [recentTrips, setRecentTrips] = useState<any[]>([]);
+
   useEffect(() => {
     loadEntries();
+    loadRouteData();
   }, []);
 
   useEffect(() => {
@@ -75,10 +96,8 @@ const RouteScreen = ({ navigation }: any) => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
       quality: 1,
     });
-
     if (!result.canceled && result.assets && result.assets.length > 0) {
       setSelectedImage(result.assets[0].uri);
     }
@@ -134,6 +153,38 @@ const RouteScreen = ({ navigation }: any) => {
     </View>
   );
 
+  // Nueva integración conexion con agente
+  const loadRouteData = async () => {
+    try {
+      const routes = await cargarRutasGuardadas();
+      const trips = await cargarViajesRecientes();
+      setSavedRoutes(routes);
+      setRecentTrips(trips);
+
+      await agentService.saveScreenState('Route', {
+        routes: routes,
+        recentTrips: trips,
+        totalRoutes: routes.length,
+        totalDistance: calcularDistanciaTotal(trips),
+        favoriteRoute: routes[0] || null,
+      });
+    } catch (error) {
+      console.error('Error loading route data:', error);
+    }
+  };
+
+  // Guardar una nueva ruta (ejemplo)
+  const saveNewRoute = async (route: any) => {
+    // Lógica para guardar la ruta (no incluida aquí)
+
+    // Reporte agente
+    await agentService.recordAppAction('Nueva ruta guardada', 'RouteScreen', {
+      name: route.name,
+      distance: route.distance,
+      waypoints: route.waypoints.length,
+    });
+  };
+
   const onChangeDate = (event: any, selectedDate?: Date) => {
     setShowDatePicker(false);
     if (selectedDate) {
@@ -141,60 +192,50 @@ const RouteScreen = ({ navigation }: any) => {
     }
   };
 
+  const navigateToSearchAddress = () => {
+    navigation.navigate('SearchAddress');
+  };
+
   return (
     <>
-      {/* StatusBar transparente */}
-      <StatusBar
-        translucent={true}
-        backgroundColor="transparent"
-        barStyle="light-content"
-      />
-      
+      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
       <SafeAreaView style={styles.safeArea}>
-        <LinearGradient 
+        <LinearGradient
           colors={['#000000', '#3A0CA3', '#F72585']}
-        locations={[0, 0.6, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-          style={[styles.container, { 
-            paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 
-          }]}
+          locations={[0, 0.6, 1]} // Aquí implementamos los porcentajes
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[styles.container, { paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }]}
         >
-          <TouchableOpacity 
-            style={[styles.backButton, { 
-              top: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 10 : 20 
-            }]} 
+          <TouchableOpacity
+            style={[styles.backButton, { top: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 10 : 20 }]}
             onPress={() => navigation.navigate('Todo')}
           >
-            <AntDesign name="doubleleft" size={20} color="white" style={styles.backButtonIcon} />
+            <AntDesign name="double-left" size={30} color="white" style={styles.backButtonIcon} />
           </TouchableOpacity>
-          
           <View style={styles.content}>
             <Text style={styles.title}>Mis Rutas</Text>
+            <TouchableOpacity style={styles.searchAddressButton} onPress={navigateToSearchAddress}>
+              <Ionicons name="search" size={20} color="white" style={styles.searchIcon} />
+              <Text style={styles.searchAddressText}>Buscar dirección</Text>
+            </TouchableOpacity>
           </View>
-          
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.keyboardAvoidingView}
-          >
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardAvoidingView}>
             <FlatList
               data={entries}
               renderItem={renderEntry}
-              keyExtractor={(item) => item.id}
+              keyExtractor={item => item.id}
               inverted
               contentContainerStyle={styles.entriesList}
               ListHeaderComponent={<View style={styles.listFooter} />}
             />
-            
             <View style={styles.inputContainer}>
               <TouchableOpacity onPress={openCamera} style={styles.mediaButton}>
                 <Ionicons name="camera" size={24} color="white" />
               </TouchableOpacity>
-              
               <TouchableOpacity onPress={pickImage} style={styles.mediaButton}>
                 <Ionicons name="image" size={24} color="white" />
               </TouchableOpacity>
-              
               <TextInput
                 style={styles.input}
                 value={newEntry}
@@ -203,39 +244,32 @@ const RouteScreen = ({ navigation }: any) => {
                 placeholderTextColor="#aaa"
                 multiline
               />
-              
               <TouchableOpacity onPress={addEntry} style={styles.sendButton}>
                 <Ionicons name="send" size={24} color="white" />
               </TouchableOpacity>
             </View>
-            
             {selectedImage && (
               <View style={styles.imagePreviewContainer}>
                 <Image source={{ uri: selectedImage }} style={styles.imagePreview} />
-                <TouchableOpacity 
-                  style={styles.removeImageButton} 
-                  onPress={() => setSelectedImage(null)}
-                >
+                <TouchableOpacity style={styles.removeImageButton} onPress={() => setSelectedImage(null)}>
                   <Ionicons name="close" size={20} color="white" />
                 </TouchableOpacity>
               </View>
             )}
           </KeyboardAvoidingView>
-          
-          {showDatePicker && (
-            <DateTimePicker
-              value={date}
-              mode="datetime"
-              display="default"
-              onChange={onChangeDate}
-            />
-          )}
-          
+          {showDatePicker && <DateTimePicker value={date} mode="datetime" display="default" onChange={onChangeDate} />}
           <Modal visible={cameraVisible} animationType="slide">
             <CameraComponent ref={cameraRef} onClose={closeCamera} />
-            <TouchableOpacity 
-              onPress={takePicture} 
-              style={styles.cameraModalButton}
+            <TouchableOpacity
+              onPress={takePicture}
+              style={{
+                position: 'absolute',
+                bottom: 40,
+                alignSelf: 'center',
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                padding: 20,
+                borderRadius: 50,
+              }}
             >
               <Ionicons name="camera" size={50} color="white" />
             </TouchableOpacity>

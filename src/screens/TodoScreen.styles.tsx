@@ -1,5 +1,3 @@
-// screens/TodoScreen.styles.ts
-
 import { StyleSheet, Dimensions, ViewStyle, TextStyle, ImageStyle, StatusBar } from 'react-native';
 
 // 1. CONSTANTES DE LAYOUT: Movidas aquí para centralizar la configuración de la presentación.
@@ -16,6 +14,7 @@ interface Styles {
   scrollContainer: ViewStyle;
   card: ViewStyle;
   cardImage: ImageStyle;
+  textContainer: ViewStyle;
   cardTitle: TextStyle;
   cardSubtitle: TextStyle;
   backButton: ViewStyle;
@@ -23,19 +22,93 @@ interface Styles {
   paginationDot: ViewStyle;
   paginationDotActive: ViewStyle;
   title: TextStyle;
+  addButton: ViewStyle;
+  addButton3: ViewStyle;
+  addButton2: ImageStyle;
+  addButton4: ImageStyle;
+  content1: ViewStyle;
 }
 
 const styles = StyleSheet.create<Styles>({
   containerGlobal: {
     flex: 1,
   },
+  addButton: {
+    position: 'absolute',
+    top: 15,
+    right: 50,
+    bottom: 30,
+    width: 65,
+    height: 65,
+    borderRadius: 30,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  addButton2: {
+      position: 'absolute',
+    top: 2,
+    right: 2,
+    bottom: 30,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#4bec3cf6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  addButton3: {
+      position: 'absolute',
+    top: 1,
+    right: 200,
+    bottom: 30,
+    width: 95,
+    height: 50,
+    borderRadius: 10,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  addButton4: {
+      position: 'absolute',
+    top: 10,
+    right: 5,
+    bottom: 30,
+    width: 90,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: '#f0f7ef02',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
   container: {
-    height: 420,
+    height: 400,
     marginVertical: 80,
     overflow: 'hidden',
   },
   content: {
-    padding: 20,
+    padding: 10,
+    alignItems: 'center',
+    width: '100%',
+  },
+   content1: {
+    padding: 10,
     alignItems: 'center',
     width: '100%',
   },
@@ -43,20 +116,30 @@ const styles = StyleSheet.create<Styles>({
     alignItems: 'center',
   },
   card: {
-    height: 400,
+    height: 420,
+    width: 420,
     borderRadius: 20,
-    justifyContent: 'center',
+    justifyContent: 'flex-end', // Cambiado para alinear el texto al fondo
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: '#010101ff',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 15,
+    position: 'relative',
   },
   cardImage: {
-    width: 80,
-    height: 80,
-    marginBottom: 20,
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    borderRadius: 20,
+  },
+  textContainer: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo semitransparente para mejor legibilidad
+    padding: 15,
+    width: '100%',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   cardTitle: {
     fontSize: 22,
@@ -64,16 +147,22 @@ const styles = StyleSheet.create<Styles>({
     color: '#fff',
     marginBottom: 8,
     textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: {width: -1, height: 1},
+    textShadowRadius: 10,
   },
   cardSubtitle: {
     fontSize: 14,
     color: '#fff',
     textAlign: 'center',
     paddingHorizontal: 10,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: {width: -1, height: 1},
+    textShadowRadius: 10,
   },
   backButton: {
     position: 'absolute',
-    top: 40,
+    marginTop: 5,
     left: 20,
     zIndex: 10,
     padding: 5,
@@ -99,25 +188,9 @@ const styles = StyleSheet.create<Styles>({
     fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
-    marginBottom: 10,
-    marginTop: -5,
-    right: -10,
-  },
-   footerContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'transparent', // Fondo transparente
-    paddingVertical: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  footerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    paddingHorizontal: 20,
+    marginBottom: 8,
+    marginTop: 8,
+    right: -5,
   },
 });
 

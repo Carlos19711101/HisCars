@@ -1,5 +1,3 @@
-// screens/RouteScreen.styles.ts
-
 import { StyleSheet, ViewStyle, TextStyle, ImageStyle, StatusBar } from 'react-native';
 
 // Interfaz para todos los estilos del componente.
@@ -28,6 +26,9 @@ interface Styles {
   listFooter: ViewStyle;
   title: TextStyle;
   cameraModalButton: ViewStyle; // Estilo añadido para el botón de la cámara
+  searchAddressButton: ViewStyle; // Nuevo estilo para el botón de búsqueda
+  searchAddressText: TextStyle; // Nuevo estilo para el texto del botón
+  searchIcon: ViewStyle; // Nuevo estilo para el icono de búsqueda
 }
 
 const styles = StyleSheet.create<Styles>({
@@ -38,8 +39,9 @@ const styles = StyleSheet.create<Styles>({
     flex: 1,
   },
   content: {
-    padding: 20,
+    padding: 10,
     alignItems: 'center',
+    right: -10,
     width: '100%',
   },
   keyboardAvoidingView: {
@@ -55,16 +57,16 @@ const styles = StyleSheet.create<Styles>({
   },
   backButtonIcon: {
     marginLeft: 0,
-    marginTop: 5,
+    marginTop: -5,
   },
   entriesList: {
     paddingBottom: 20,
   },
   entryContainer: {
-    backgroundColor: 'rgba(43, 202, 213, 0.14)',
+    backgroundColor: 'rgba(30, 6, 251, 0.18)',
     borderRadius: 10,
-    padding: 15,
-    marginHorizontal: 15,
+    padding: 5,
+    marginHorizontal: 8,
     marginVertical: 8,
     position: 'relative',
   },
@@ -77,9 +79,11 @@ const styles = StyleSheet.create<Styles>({
   entryDate: {
     color: '#fff',
     fontSize: 12,
+    left: 25,
   },
   deleteButton: {
     padding: 5,
+    right: 5,
   },
   entryText: {
     fontSize: 16,
@@ -88,9 +92,9 @@ const styles = StyleSheet.create<Styles>({
   },
   entryImage: {
     width: '100%',
-    height: 200,
+    height: 400,
     borderRadius: 8,
-    marginTop: 10,
+    marginTop: 8,
   },
   timelineConnector: {
     position: 'absolute',
@@ -145,8 +149,9 @@ const styles = StyleSheet.create<Styles>({
     fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
-    marginBottom: 10,
-    marginTop: 5,
+    marginBottom: 8,
+    marginTop: 8,
+    right: -5,
   },
   cameraModalButton: {
     position: 'absolute',
@@ -156,7 +161,28 @@ const styles = StyleSheet.create<Styles>({
     padding: 20,
     borderRadius: 50,
   },
-   footerContainer: {
+  // Nuevos estilos para el botón de búsqueda
+  searchAddressButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(6, 254, 254, 0.89)',
+    paddingVertical: 12,
+    paddingHorizontal: 60,
+    borderRadius: 20,
+    marginLeft: -15,
+    marginTop: 10,
+  },
+  searchAddressText: {
+    alignItems: 'center',
+    color: 'white',
+    fontSize: 14,
+    right: -10,
+    fontWeight: '600',
+  },
+  searchIcon: {
+    left: -25,
+  },
+  footerContainer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
@@ -172,7 +198,7 @@ const styles = StyleSheet.create<Styles>({
     width: '100%',
     paddingHorizontal: 20,
   },
-    listFooter: {
+  listFooter: {
     height: 20,
     marginBottom: 5,
   },

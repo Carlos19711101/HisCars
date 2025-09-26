@@ -1,0 +1,252 @@
+// IAScreen.styles.ts
+import { StyleSheet } from 'react-native';
+
+export default StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  content: {
+    alignItems: 'center',
+    padding: 24,
+    width: '100%',
+  },
+  title: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: "#fff",
+    marginBottom: 4,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
+  },
+  subtitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ffffff',
+    // 👇 Esto es lo importante
+    flexShrink: 1,      // Permite que se ajuste si el contenedor es pequeño
+    flexWrap: 'wrap',   // Permite salto de línea
+    includeFontPadding: false, // Evita cortes raros en Android
+    textAlign: 'center', // (opcional) para centrar
+  },
+  // subtitle: {
+  //   fontSize: 10,
+  //   color: "#ffffff",
+  //   marginBottom: 10,
+  //   textAlign: 'center',
+  //   opacity: 0.9,
+  // },
+  description: {
+    fontSize: 12,
+    color: "#ffffff",
+    marginTop: 15,
+    textAlign: 'center',
+    marginBottom: 25,
+    lineHeight: 22,
+    opacity: 0.5,
+    paddingHorizontal: 20,
+  },
+  requirementBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 30,
+    width: '90%',
+  },
+  infoIcon: {
+    marginRight: 10,
+  },
+  requirementText: {
+    fontSize: 14,
+    color: "#fff",
+    flex: 1,
+    textAlign: 'left',
+    lineHeight: 20,
+  },
+  helpButton: {
+    width: '90%',
+    borderRadius: 25,
+    overflow: 'hidden',
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  buttonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 18,
+    paddingHorizontal: 24,
+  },
+  buttonIcon: {
+    marginRight: 12,
+  },
+  helpButtonText: {
+    color: "#fff",
+    fontWeight: "800",
+    fontSize: 18,
+    textAlign: 'center',
+  },
+  downloadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    marginBottom: 15,
+  },
+  downloadIcon: {
+    marginRight: 8,
+  },
+  downloadButtonText: {
+    color: "#0eb9e3",
+    fontWeight: "500",
+    fontSize: 13,
+  },
+  footerText: {
+    fontSize: 14,
+    color: "#ffffff",
+    textAlign: 'center',
+    marginTop: 20,
+    opacity: 0.7,
+    fontStyle: 'italic',
+  },
+  // Estilos para el modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(7, 182, 246, 1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 'auto',
+  },
+  modalContainer: {
+    width: 'auto',
+    backgroundColor: '#06c0f4fb',
+    borderRadius: 20,
+    maxHeight: '90%',
+    paddingVertical: 'auto',
+    overflow: 'hidden',
+  },
+  modalContent: {
+    backgroundColor: '#4acff8ff',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 15,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  closeButton: {
+    padding: 5,
+  },
+  modalDescription: {
+    fontSize: 16,
+    color: '#ffffff',
+    textAlign: 'center',
+    marginBottom: 15,
+    lineHeight: 22,
+  },
+  questionInput: {
+    width: '100%',
+    minHeight: 120,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 10,
+    fontSize: 16,
+    textAlignVertical: 'top',
+    backgroundColor: '#f9f9f9',
+  },
+  noteText: {
+    fontSize: 12,
+    color: '#ffffff',
+    textAlign: 'center',
+    marginBottom: 20,
+    fontStyle: 'italic',
+  },
+  submitButton: {
+    backgroundColor: '#0eb9e3',
+    borderRadius: 25,
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    width: '100%',
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  submitButtonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  // Agregar estos estilos a tu archivo IAScreen.styles.ts
+
+openModalContent: {
+  backgroundColor: '#fff',
+  borderRadius: 20,
+  padding: 24,
+  width: '90%',
+  alignItems: 'center',
+},
+instructionBox: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: '#e8f5ff',
+  borderRadius: 12,
+  padding: 16,
+  marginVertical: 15,
+  width: '100%',
+},
+instructionText: {
+  fontSize: 14,
+  color: '#0eb9e3',
+  marginLeft: 10,
+  flex: 1,
+},
+openButton: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: '#0eb9e3',
+  borderRadius: 25,
+  paddingVertical: 16,
+  paddingHorizontal: 24,
+  marginBottom: 15,
+  width: '100%',
+  justifyContent: 'center',
+},
+openButtonText: {
+  color: '#fff',
+  fontWeight: 'bold',
+  fontSize: 16,
+  marginLeft: 10,
+},
+cancelButton: {
+  padding: 10,
+},
+cancelButtonText: {
+  color: '#666',
+  fontSize: 14,
+},
+});

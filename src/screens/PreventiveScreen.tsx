@@ -10,7 +10,7 @@ import {
   Platform,
   Alert,
   Modal,
-  StatusBar
+  StatusBar,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
@@ -19,6 +19,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CameraComponent, { CameraComponentRef } from '../components/CameraComponent';
 import styles from './PreventiveScreen.styles';
+import { agentService } from '../service/agentService';
 
 type JournalEntry = {
   id: string;
@@ -27,9 +28,18 @@ type JournalEntry = {
   image?: string;
 };
 
+type PreventiveTask = {
+  id: string;
+  description: string;
+  dueDate: string; // string ISO
+  completed: boolean;
+};
+
 const STORAGE_KEY = '@journal_entries_Preventive';
+const TASKS_KEY = '@preventive_tasks';
 
 const PreventiveScreen = ({ navigation }: any) => {
+  // Bitácora
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [newEntry, setNewEntry] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -38,13 +48,19 @@ const PreventiveScreen = ({ navigation }: any) => {
   const [cameraVisible, setCameraVisible] = useState(false);
   const cameraRef = useRef<CameraComponentRef>(null);
 
+  // Tareas preventivas
+  const [preventiveTasks, setPreventiveTasks] = useState<PreventiveTask[]>([]);
+
   useEffect(() => {
     loadEntries();
+    loadPreventiveTasks();
   }, []);
 
   useEffect(() => {
     saveEntries(entries);
   }, [entries]);
+
+  // ------------ BITÁCORA LOGIC ------------
 
   const saveEntries = async (entriesToSave: JournalEntry[]) => {
     try {
@@ -59,7 +75,7 @@ const PreventiveScreen = ({ navigation }: any) => {
     try {
       const jsonValue = await AsyncStorage.getItem(STORAGE_KEY);
       if (jsonValue != null) {
-        const loadedEntries = JSON.parse(jsonValue).map((entry: any) => ({
+        const loadedEntries: JournalEntry[] = JSON.parse(jsonValue).map((entry: any) => ({
           ...entry,
           date: new Date(entry.date),
         }));
@@ -74,10 +90,8 @@ const PreventiveScreen = ({ navigation }: any) => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
       quality: 1,
     });
-
     if (!result.canceled) {
       setSelectedImage(result.assets[0].uri);
     }
@@ -98,14 +112,12 @@ const PreventiveScreen = ({ navigation }: any) => {
 
   const addEntry = () => {
     if (!newEntry.trim() && !selectedImage) return;
-
     const entry: JournalEntry = {
       id: Date.now().toString(),
       text: newEntry,
       date: new Date(date),
       image: selectedImage || undefined,
     };
-
     setEntries([entry, ...entries]);
     setNewEntry('');
     setSelectedImage(null);
@@ -139,14 +151,75 @@ const PreventiveScreen = ({ navigation }: any) => {
           <Ionicons name="trash" size={20} color="#ff5252" />
         </TouchableOpacity>
       </View>
-
       {item.image && (
         <Image source={{ uri: item.image }} style={styles.entryImage} />
       )}
-
       {item.text && <Text style={styles.entryText}>{item.text}</Text>}
-
       <View style={styles.timelineConnector} />
+    </View>
+  );
+
+  // ----------- TAREAS PREVENTIVAS ------------
+
+  const cargarTareasPreventivas = async (): Promise<PreventiveTask[]> => {
+    const storage = await AsyncStorage.getItem(TASKS_KEY);
+    let tareas: PreventiveTask[] = [];
+    if (storage) {
+      tareas = JSON.parse(storage);
+    }
+    return tareas;
+  };
+
+  const savePreventiveTasks = async (tasks: PreventiveTask[]) => {
+    await AsyncStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
+    setPreventiveTasks(tasks);
+    // Reporte al agente
+    await agentService.saveScreenState('Preventive', {
+      tasks,
+      totalTasks: tasks.length,
+      completed: tasks.filter(t => t.completed).length,
+      nextDue: tasks.find(t => !t.completed && new Date(t.dueDate) > new Date()),
+    });
+  };
+
+  const loadPreventiveTasks = async () => {
+    try {
+      const tasks = await cargarTareasPreventivas();
+      setPreventiveTasks(tasks);
+      await agentService.saveScreenState('Preventive', {
+        tasks,
+        totalTasks: tasks.length,
+        completed: tasks.filter(t => t.completed).length,
+        nextDue: tasks.find(t => !t.completed && new Date(t.dueDate) > new Date()),
+      });
+    } catch (e) {
+      console.error('Error loading preventive tasks:', e);
+    }
+  };
+
+  const completeTask = async (taskId: string) => {
+    const updated = preventiveTasks.map(t =>
+      t.id === taskId ? { ...t, completed: true } : t
+    );
+    await savePreventiveTasks(updated);
+    await agentService.recordAppAction(
+      'Tarea preventiva completada',
+      'PreventiveScreen',
+      { taskId }
+    );
+  };
+
+  const renderTask = ({ item }: { item: PreventiveTask }) => (
+    <View style={styles.taskCard}>
+      <Text style={styles.taskDescription}>{item.description}</Text>
+      <Text style={styles.taskDue}>Vence: {new Date(item.dueDate).toLocaleDateString()}</Text>
+      <Text style={styles.taskStatus}>Estado: {item.completed ? 'Completada' : 'Pendiente'}</Text>
+      {!item.completed && (
+        <TouchableOpacity onPress={() => completeTask(item.id)} style={styles.completeBtn}>
+          <Ionicons name="checkmark-circle" size={20} color="#39d353" />
+          <Text style={styles.completeText}>Marcar como completada</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 
@@ -159,33 +232,43 @@ const PreventiveScreen = ({ navigation }: any) => {
 
   return (
     <>
-      {/* StatusBar transparente con texto claro */}
       <StatusBar
         translucent={true}
         backgroundColor="transparent"
         barStyle="light-content"
       />
-      
       <LinearGradient
         colors={['#000000', '#3A0CA3', '#F72585']}
-        locations={[0, 0.6, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={[styles.container, { 
-          paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 
-        }]}
+          locations={[0, 0.6, 1]} // Aquí implementamos los porcentajes
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        style={[
+          styles.container,
+          { paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+        ]}
       >
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.navigate('Todo')}
         >
-          <AntDesign name="doubleleft" size={24} color="white" />
+          <AntDesign name="double-left" size={24} color="white" />
         </TouchableOpacity>
-        
         <View style={styles.content}>
           <Text style={styles.title}>Mantenimiento Preventivo</Text>
         </View>
-        
+        {/* Lista de tareas preventivas */}
+        {/* <View>
+          <Text style={styles.sectionTitle}>Tareas preventivas</Text>
+          <FlatList
+            data={preventiveTasks}
+            keyExtractor={item => item.id}
+            renderItem={renderTask}
+            ListEmptyComponent={<Text>No hay tareas preventivas configuradas.</Text>}
+            horizontal={true}
+            contentContainerStyle={styles.taskList}
+          />
+        </View> */}
+        {/* Bitácora/commentarios */}
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardAvoidingView}
@@ -193,21 +276,18 @@ const PreventiveScreen = ({ navigation }: any) => {
           <FlatList
             data={entries}
             renderItem={renderEntry}
-            keyExtractor={(item) => item.id}
+            keyExtractor={item => item.id}
             inverted
             contentContainerStyle={styles.entriesList}
             ListHeaderComponent={<View style={styles.listFooter} />}
           />
-
           <View style={styles.inputContainer}>
             <TouchableOpacity onPress={openCamera} style={styles.mediaButton}>
               <Ionicons name="camera" size={24} color="white" />
             </TouchableOpacity>
-            
             <TouchableOpacity onPress={pickImage} style={styles.mediaButton}>
               <Ionicons name="image" size={24} color="white" />
             </TouchableOpacity>
-            
             <TextInput
               style={styles.input}
               value={newEntry}
@@ -216,12 +296,10 @@ const PreventiveScreen = ({ navigation }: any) => {
               placeholderTextColor="#aaa"
               multiline
             />
-            
             <TouchableOpacity onPress={addEntry} style={styles.sendButton}>
               <Ionicons name="send" size={24} color="white" />
             </TouchableOpacity>
           </View>
-
           {selectedImage && (
             <View style={styles.imagePreviewContainer}>
               <Image source={{ uri: selectedImage }} style={styles.imagePreview} />
@@ -234,7 +312,6 @@ const PreventiveScreen = ({ navigation }: any) => {
             </View>
           )}
         </KeyboardAvoidingView>
-
         {showDatePicker && (
           <DateTimePicker
             value={date}
@@ -243,7 +320,6 @@ const PreventiveScreen = ({ navigation }: any) => {
             onChange={onChangeDate}
           />
         )}
-
         <Modal visible={cameraVisible} animationType="slide">
           <CameraComponent ref={cameraRef} onClose={closeCamera} />
           <TouchableOpacity

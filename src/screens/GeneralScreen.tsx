@@ -10,7 +10,7 @@ import {
   Platform,
   Alert,
   Modal,
-  StatusBar
+  StatusBar,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
@@ -20,6 +20,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CameraComponent, { CameraComponentRef } from '../components/CameraComponent';
 import styles from '../screens/GeneralScreen,style';
 
+import { agentService } from '../service/agentService';
+
+// Tipos
 type JournalEntry = {
   id: string;
   text: string;
@@ -27,9 +30,18 @@ type JournalEntry = {
   image?: string;
 };
 
+type Service = {
+  id: string;
+  type: string;
+  cost?: number;
+  completed?: boolean;
+  [key: string]: any
+};
+
 const STORAGE_KEY = '@journal_entries_general';
 
 const GeneralScreen = ({ navigation }: any) => {
+  // Bitácora y fotos
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [newEntry, setNewEntry] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -38,14 +50,19 @@ const GeneralScreen = ({ navigation }: any) => {
   const [cameraVisible, setCameraVisible] = useState(false);
   const cameraRef = useRef<CameraComponentRef>(null);
 
+  // Servicios para integración agente
+  const [services, setServices] = useState<Service[]>([]);
+
   useEffect(() => {
     loadEntries();
+    loadServices();
   }, []);
 
   useEffect(() => {
     saveEntries(entries);
   }, [entries]);
 
+  // ------ BITÁCORA ---------
   const saveEntries = async (entriesToSave: JournalEntry[]) => {
     try {
       const jsonValue = JSON.stringify(entriesToSave);
@@ -70,17 +87,50 @@ const GeneralScreen = ({ navigation }: any) => {
     }
   };
 
+  // ------ SERVICIOS (INTEGRACIÓN agenteService) ------
+  const cargarServicios = async (): Promise<Service[]> => {
+    // Aquí ajustarías para cargar tu lista real de servicios,
+    // por este ejemplo, la simulamos cargando un array vacío:
+    // Puedes reemplazar esta lógica con la carga real de tus servicios desde storage, API, etc.
+    return [];
+  };
+
+  const loadServices = async () => {
+    try {
+      const loadedServices = await cargarServicios();
+      setServices(loadedServices);
+
+      // Analítica/agente
+      await agentService.saveScreenState('General', {
+        services: loadedServices,
+        totalServices: loadedServices.length,
+        pending: loadedServices.filter(s => !s.completed).length,
+        lastService: loadedServices[loadedServices.length - 1] || null,
+      });
+    } catch (error) {
+      console.error('Error loading services:', error);
+    }
+  };
+
+  const addService = async (newService: Service) => {
+    // Actualizas tu lista de servicios
+    setServices([newService, ...services]);
+    // Analítica/agente
+    await agentService.recordAppAction(
+      'Servicio agregado',
+      'GeneralScreen',
+      { service: newService.type, cost: newService.cost }
+    );
+  };
+
+  // -------- RESTO DE TU FLUJO BITÁCORA Y MEDIA -----------
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
       quality: 1,
     });
-
-    if (!result.canceled) {
-      setSelectedImage(result.assets[0].uri);
-    }
+    if (!result.canceled) setSelectedImage(result.assets[0].uri);
   };
 
   const openCamera = () => setCameraVisible(true);
@@ -139,13 +189,10 @@ const GeneralScreen = ({ navigation }: any) => {
           <Ionicons name="trash" size={20} color="#ff5252" />
         </TouchableOpacity>
       </View>
-
       {item.image && (
         <Image source={{ uri: item.image }} style={styles.entryImage} />
       )}
-
       {item.text && <Text style={styles.entryText}>{item.text}</Text>}
-
       <View style={styles.timelineConnector} />
     </View>
   );
@@ -159,31 +206,28 @@ const GeneralScreen = ({ navigation }: any) => {
 
   return (
     <>
-      {/* StatusBar transparente */}
-      <StatusBar
-        translucent={true}
-        backgroundColor="transparent"
-        barStyle="light-content"
-      />
-      
+      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
       <LinearGradient
-        colors={['#000000', '#3A0CA3', '#F72585']}
-        locations={[0, 0.6, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={[styles.container, { paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }]}
+       colors={['#000000', '#3A0CA3', '#F72585']}
+          locations={[0, 0.6, 1]} // Aquí implementamos los porcentajes
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        style={[
+          styles.container,
+          { paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+        ]}
       >
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.navigate('Todo')}
         >
-          <AntDesign name="doubleleft" size={24} color="white" />
+          <AntDesign name="double-left" size={24} color="white" />
         </TouchableOpacity>
-        
+
         <View style={styles.content}>
           <Text style={styles.title}>Mantenimiento General</Text>
         </View>
-        
+
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardAvoidingView}
@@ -201,11 +245,11 @@ const GeneralScreen = ({ navigation }: any) => {
             <TouchableOpacity onPress={openCamera} style={styles.mediaButton}>
               <Ionicons name="camera" size={24} color="white" />
             </TouchableOpacity>
-            
+
             <TouchableOpacity onPress={pickImage} style={styles.mediaButton}>
               <Ionicons name="image" size={24} color="white" />
             </TouchableOpacity>
-            
+
             <TextInput
               style={styles.input}
               value={newEntry}
@@ -214,7 +258,7 @@ const GeneralScreen = ({ navigation }: any) => {
               placeholderTextColor="#aaa"
               multiline
             />
-            
+
             <TouchableOpacity onPress={addEntry} style={styles.sendButton}>
               <Ionicons name="send" size={24} color="white" />
             </TouchableOpacity>

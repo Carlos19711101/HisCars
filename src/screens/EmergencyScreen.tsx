@@ -10,7 +10,7 @@ import {
   Platform,
   Alert,
   Modal,
-  StatusBar
+  StatusBar,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
@@ -19,6 +19,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CameraComponent, { CameraComponentRef } from '../components/CameraComponent';
 import styles from './EmergencyScreen.styles';
+import { agentService } from '../service/agentService';
 
 type JournalEntry = {
   id: string;
@@ -27,9 +28,31 @@ type JournalEntry = {
   image?: string;
 };
 
+type EmergencyContact = {
+  id: string;
+  name: string;
+  phone: string;
+};
+
+type EmergencyProtocol = {
+  id: string;
+  title: string;
+  description: string;
+};
+
 const STORAGE_KEY = '@journal_entries_emergency';
 
+// Simulación funciones para cargar datos, reemplaza con la tuya real
+const cargarContactosEmergencia = async (): Promise<EmergencyContact[]> => {
+  // Por ejemplo podrías cargar desde AsyncStorage o API
+  return [];
+};
+const cargarProtocolos = async (): Promise<EmergencyProtocol[]> => {
+  return [];
+};
+
 const EmergencyScreen = ({ navigation }: any) => {
+  // Bitácora
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [newEntry, setNewEntry] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -38,8 +61,13 @@ const EmergencyScreen = ({ navigation }: any) => {
   const [cameraVisible, setCameraVisible] = useState(false);
   const cameraRef = useRef<CameraComponentRef>(null);
 
+  // Emergencia contactos y protocolos
+  const [emergencyContacts, setEmergencyContacts] = useState<EmergencyContact[]>([]);
+  const [emergencyProtocols, setEmergencyProtocols] = useState<EmergencyProtocol[]>([]);
+
   useEffect(() => {
     loadEntries();
+    loadEmergencyData();
   }, []);
 
   useEffect(() => {
@@ -59,7 +87,7 @@ const EmergencyScreen = ({ navigation }: any) => {
     try {
       const jsonValue = await AsyncStorage.getItem(STORAGE_KEY);
       if (jsonValue != null) {
-        const loadedEntries = JSON.parse(jsonValue).map((entry: any) => ({
+        const loadedEntries: JournalEntry[] = JSON.parse(jsonValue).map((entry: any) => ({
           ...entry,
           date: new Date(entry.date),
         }));
@@ -74,10 +102,8 @@ const EmergencyScreen = ({ navigation }: any) => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
       quality: 1,
     });
-
     if (!result.canceled) {
       setSelectedImage(result.assets[0].uri);
     }
@@ -98,14 +124,12 @@ const EmergencyScreen = ({ navigation }: any) => {
 
   const addEntry = () => {
     if (!newEntry.trim() && !selectedImage) return;
-
     const entry: JournalEntry = {
       id: Date.now().toString(),
       text: newEntry,
       date: new Date(date),
       image: selectedImage || undefined,
     };
-
     setEntries([entry, ...entries]);
     setNewEntry('');
     setSelectedImage(null);
@@ -139,16 +163,39 @@ const EmergencyScreen = ({ navigation }: any) => {
           <Ionicons name="trash" size={20} color="#ff5252" />
         </TouchableOpacity>
       </View>
-
-      {item.image && (
-        <Image source={{ uri: item.image }} style={styles.entryImage} />
-      )}
-
+      {item.image && <Image source={{ uri: item.image }} style={styles.entryImage} />}
       {item.text && <Text style={styles.entryText}>{item.text}</Text>}
-
-      <View style={styles.timelineConnector} />
     </View>
   );
+
+  // Carga contactos y protocolos, registro con agente
+  const loadEmergencyData = async () => {
+    try {
+      const contacts = await cargarContactosEmergencia();
+      const protocols = await cargarProtocolos();
+
+      setEmergencyContacts(contacts);
+      setEmergencyProtocols(protocols);
+
+      await agentService.saveScreenState('Emergency', {
+        contacts,
+        protocols,
+        totalContacts: contacts.length,
+        lastUpdated: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error('Error loading emergency data:', error);
+    }
+  };
+
+  // Registro de uso de contacto emergencia con agente:
+  const useEmergencyContact = async (contact: EmergencyContact) => {
+    await agentService.recordAppAction(
+      'Contacto de emergencia usado',
+      'EmergencyScreen',
+      { contact: contact.name, number: contact.phone }
+    );
+  };
 
   const onChangeDate = (event: any, selectedDate?: Date) => {
     setShowDatePicker(false);
@@ -159,42 +206,30 @@ const EmergencyScreen = ({ navigation }: any) => {
 
   return (
     <>
-      {/* StatusBar transparente */}
-      <StatusBar
-        translucent={true}
-        backgroundColor="transparent"
-        barStyle="light-content"
-      />
-      
+      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
       <LinearGradient
         colors={['#000000', '#3A0CA3', '#F72585']}
-        locations={[0, 0.6, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+          locations={[0, 0.6, 1]} // Aquí implementamos los porcentajes
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
         style={[styles.container, { paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }]}
       >
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.navigate('Todo')}
-        >
-          <AntDesign name="doubleleft" size={24} color="white" />
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Todo')}>
+          <AntDesign name="double-left" size={24} color="white" />
         </TouchableOpacity>
-        
+
         <View style={styles.content}>
-          <Text style={styles.title}>Situaciones en Vía</Text>
+          <Text style={styles.title}>Daños en la Vía</Text>
         </View>
-        
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardAvoidingView}
-        >
+
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardAvoidingView}>
           <FlatList
             data={entries}
             renderItem={renderEntry}
             keyExtractor={(item) => item.id}
             inverted
             contentContainerStyle={styles.entriesList}
-            ListHeaderComponent={<View style={styles.listFooter} />}
+            ListHeaderComponent={<></>}
           />
 
           <View style={styles.inputContainer}>
@@ -223,10 +258,7 @@ const EmergencyScreen = ({ navigation }: any) => {
           {selectedImage && (
             <View style={styles.imagePreviewContainer}>
               <Image source={{ uri: selectedImage }} style={styles.imagePreview} />
-              <TouchableOpacity
-                style={styles.removeImageButton}
-                onPress={() => setSelectedImage(null)}
-              >
+              <TouchableOpacity style={styles.removeImageButton} onPress={() => setSelectedImage(null)}>
                 <Ionicons name="close" size={20} color="white" />
               </TouchableOpacity>
             </View>
@@ -234,12 +266,7 @@ const EmergencyScreen = ({ navigation }: any) => {
         </KeyboardAvoidingView>
 
         {showDatePicker && (
-          <DateTimePicker
-            value={date}
-            mode="datetime"
-            display="default"
-            onChange={onChangeDate}
-          />
+          <DateTimePicker value={date} mode="datetime" display="default" onChange={onChangeDate} />
         )}
 
         <Modal visible={cameraVisible} animationType="slide">

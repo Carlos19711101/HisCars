@@ -3,6 +3,7 @@ import { View, Button, StyleSheet, TouchableOpacity, Text, Alert } from 'react-n
 import { CameraView,  useCameraPermissions } from 'expo-camera';
 import { CameraType } from 'expo-image-picker';
 
+
 type CameraComponentProps = {
   type?: CameraType;
   onClose?: () => void;

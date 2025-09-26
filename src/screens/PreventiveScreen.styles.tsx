@@ -1,8 +1,6 @@
-// screens/PreventiveScreen.styles.ts
-
 import { StyleSheet, ViewStyle, TextStyle, ImageStyle } from 'react-native';
 
-// Interfaz para asegurar el tipado fuerte de nuestros estilos
+// Interfaz para asegurar tipado fuerte de estilos
 interface Styles {
   container: ViewStyle;
   content: ViewStyle;
@@ -25,6 +23,19 @@ interface Styles {
   removeImageButton: ViewStyle;
   listFooter: ViewStyle;
   title: TextStyle;
+
+  // Nuevos estilos para tareas preventivas
+  sectionTitle: TextStyle;
+  taskList: ViewStyle;
+  taskCard: ViewStyle;
+  taskDescription: TextStyle;
+  taskDue: TextStyle;
+  taskStatus: TextStyle;
+  completeBtn: ViewStyle;
+  completeText: TextStyle;
+
+  footerContainer?: ViewStyle;
+  footerContent?: ViewStyle;
 }
 
 const styles = StyleSheet.create<Styles>({
@@ -50,10 +61,10 @@ const styles = StyleSheet.create<Styles>({
     paddingBottom: 20,
   },
   entryContainer: {
-    backgroundColor: 'rgba(43, 202, 213, 0.14)',
+    backgroundColor: 'rgba(30, 6, 251, 0.18)',
     borderRadius: 10,
-    padding: 15,
-    marginHorizontal: 15,
+    padding: 5,
+    marginHorizontal: 8,
     marginVertical: 8,
     position: 'relative',
   },
@@ -61,14 +72,17 @@ const styles = StyleSheet.create<Styles>({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 5,
+    right: 5,
   },
   entryDate: {
     color: '#fff',
     fontSize: 12,
+    left: 25,
   },
   deleteButton: {
     padding: 5,
+    right: 5,
   },
   entryText: {
     fontSize: 16,
@@ -77,9 +91,9 @@ const styles = StyleSheet.create<Styles>({
   },
   entryImage: {
     width: '100%',
-    height: 200,
+    height: 400,
     borderRadius: 8,
-    marginTop: 10,
+    marginTop: 5,
   },
   timelineConnector: {
     position: 'absolute',
@@ -137,11 +151,12 @@ const styles = StyleSheet.create<Styles>({
     fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
-    marginBottom: 30,
-    marginTop: 10,
+    marginBottom: 8,
+    marginTop: 8,
     right: -5,
   },
-    footerContainer: {
+
+  footerContainer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
@@ -156,6 +171,53 @@ const styles = StyleSheet.create<Styles>({
     justifyContent: 'space-around',
     width: '100%',
     paddingHorizontal: 20,
+  },
+
+  // --- Estilos para tareas preventivas ---
+
+  sectionTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginLeft: 12,
+    marginBottom: 10,
+  },
+  taskList: {
+    paddingHorizontal: 12,
+  },
+  taskCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    padding: 14,
+    borderRadius: 14,
+    marginRight: 14,
+    minWidth: 210,
+    maxWidth: 250,
+  },
+  taskDescription: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  taskDue: {
+    color: '#fff',
+    marginTop: 4,
+    fontSize: 13,
+  },
+  taskStatus: {
+    marginTop: 6,
+    color: '#ccc',
+    fontSize: 12,
+  },
+  completeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  completeText: {
+    marginLeft: 6,
+    color: '#39d353',
+    fontWeight: '600',
+    fontSize: 13,
   },
 });
 

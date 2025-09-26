@@ -1,13 +1,18 @@
-
 // screens/ProfileScreen.styles.ts
-
-import { StyleSheet, ViewStyle, TextStyle, ImageStyle, Platform, Dimensions, StatusBar } from 'react-native';
+import {
+  StyleSheet,
+  ViewStyle,
+  TextStyle,
+  ImageStyle,
+  Platform,
+  Dimensions,
+} from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 const avatarSize = width * 0.7;
-const editButtonSize = avatarSize * 0.20;
+const editButtonSize = avatarSize * 0.2;
 
-// Interfaz para todos los estilos del componente, ya consolidados.
+// Interfaz para todos los estilos del componente, ya consolidada.
 interface Styles {
   // Estilos Principales
   container: ViewStyle;
@@ -28,6 +33,10 @@ interface Styles {
   verticalButtonRow: ViewStyle;
   buttonWithResult: ViewStyle;
 
+  // NUEVO: fila interna del botón (texto + icono a la derecha)
+  buttonContentRow: ViewStyle;
+  buttonIconRight: ViewStyle;
+
   // Estilos para el Modal de Selección de Imagen
   imagePickerModalOverlay: ViewStyle;
   imagePickerModalContent: ViewStyle;
@@ -36,7 +45,7 @@ interface Styles {
   imagePickerModalCancel: ViewStyle;
   imagePickerModalCancelText: TextStyle;
 
-  // Estilos para los Modales de Edición de Texto
+  // Estilos para Modales de Edición (ya existentes)
   editModalOverlay: ViewStyle;
   editModalContent: ViewStyle;
   editModalTitle: TextStyle;
@@ -46,6 +55,26 @@ interface Styles {
   editModalSaveButtonText: TextStyle;
   editModalCancelButton: ViewStyle;
   editModalCancelButtonText: TextStyle;
+
+  // Footer (ya lo tenías)
+  footerContainer: ViewStyle;
+  footerContent: ViewStyle;
+
+  // NUEVO: modales para DatePicker / Recordatorios / Días semana
+  pickerModalOverlay: ViewStyle;
+  pickerModalCard: ViewStyle;
+  pickerActionsRow: ViewStyle;
+
+  // NUEVO: chips de recordatorio
+  reminderChipsRow: ViewStyle;
+  chip: ViewStyle;
+  chipSelected: ViewStyle;
+  chipText: TextStyle;
+
+  // NUEVO: grid de días (Pico y Placa)
+  weekdayGrid: ViewStyle;
+  weekdayItem: ViewStyle;
+  weekdayText: TextStyle;
 }
 
 const styles = StyleSheet.create<Styles>({
@@ -69,7 +98,6 @@ const styles = StyleSheet.create<Styles>({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-    // Aplicamos el tamaño aquí para que el contenedor tenga la dimensión correcta para la sombra
     width: avatarSize,
     height: avatarSize,
     borderRadius: avatarSize / 2,
@@ -95,7 +123,6 @@ const styles = StyleSheet.create<Styles>({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#ddd',
-    // Aplicamos tamaño y posición aquí
     width: editButtonSize,
     height: editButtonSize,
     borderRadius: editButtonSize / 2,
@@ -183,6 +210,17 @@ const styles = StyleSheet.create<Styles>({
     marginBottom: 15,
   },
 
+  // NUEVO: contenido del botón (texto + icono derecha)
+  buttonContentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  buttonIconRight: {
+    marginLeft: 8,
+  },
+
   // --- Estilos para el Modal de Selección de Imagen ---
   imagePickerModalOverlay: {
     flex: 1,
@@ -234,6 +272,7 @@ const styles = StyleSheet.create<Styles>({
     fontSize: 20,
     marginBottom: 18,
     textAlign: 'center',
+    color: '#111',
   },
   editModalInput: {
     borderColor: '#ccc',
@@ -275,12 +314,14 @@ const styles = StyleSheet.create<Styles>({
     fontWeight: 'bold',
     fontSize: 16,
   },
-     footerContainer: {
+
+  // Footer (ya lo tenías)
+  footerContainer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'transparent', // Fondo transparente
+    backgroundColor: 'transparent',
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
@@ -290,6 +331,76 @@ const styles = StyleSheet.create<Styles>({
     justifyContent: 'space-around',
     width: '100%',
     paddingHorizontal: 20,
+  },
+
+  // --- NUEVO: Modales DatePicker / Recordatorios / Días semana ---
+  pickerModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  pickerModalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    width: '100%',
+    maxWidth: 400,
+    elevation: 8,
+  },
+  pickerActionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+
+  // --- NUEVO: Chips de recordatorio ---
+  reminderChipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 8,
+    marginHorizontal: -4, // para compensar márgenes en chips
+  },
+  chip: {
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.25)',
+    borderRadius: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    marginHorizontal: 4,
+    marginVertical: 4,
+    backgroundColor: '#fff',
+  },
+  chipSelected: {
+    backgroundColor: '#76fd09',
+    borderColor: '#76fd09',
+  },
+  chipText: {
+    color: '#111',
+    fontWeight: '600',
+  },
+
+  // --- NUEVO: Grid de días (Pico y Placa) ---
+  weekdayGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  weekdayItem: {
+    width: '48%',
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.15)',
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  weekdayText: {
+    color: '#111',
+    fontWeight: '600',
   },
 });
 
