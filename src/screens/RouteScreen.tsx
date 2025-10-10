@@ -1,3 +1,4 @@
+// screens/RouteScreen.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -20,7 +21,6 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CameraComponent, { CameraComponentRef } from '../components/CameraComponent';
 import styles from './RouteScreen.styles';
-
 import { agentService } from '../service/agentService';
 
 type JournalEntry = {
@@ -64,14 +64,18 @@ const RouteScreen = ({ navigation }: any) => {
     loadRouteData();
   }, []);
 
+  // ✅ Guardar en storage y actualizar estado del agente cuando cambien las entradas
   useEffect(() => {
     saveEntries(entries);
+    updateAgentRouteState(entries);
   }, [entries]);
 
+  // ---------- Bitácora ----------
   const saveEntries = async (entriesToSave: JournalEntry[]) => {
     try {
-      const jsonValue = JSON.stringify(entriesToSave);
-      await AsyncStorage.setItem(STORAGE_KEY, jsonValue);
+      // Guardar con fecha en ISO para que el ChatBots lo ordene bien
+      const payload = entriesToSave.map(e => ({ ...e, date: e.date.toISOString() }));
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch (e) {
       console.error('Error guardando entradas:', e);
     }
@@ -89,6 +93,26 @@ const RouteScreen = ({ navigation }: any) => {
       }
     } catch (e) {
       console.error('Error cargando entradas:', e);
+    }
+  };
+
+  // 🔗 Estado para el Agente (lo que lee el ChatBots para resumen/últimos 5)
+  const updateAgentRouteState = async (list: JournalEntry[]) => {
+    try {
+      const sorted = [...list].sort((a, b) => b.date.getTime() - a.date.getTime());
+      const last = sorted[0] || null;
+
+      await agentService.saveScreenState('Route', {
+        routes: savedRoutes,
+        recentTrips,
+        totalRoutes: savedRoutes.length,
+        totalDistance: calcularDistanciaTotal(recentTrips),
+        favorite: savedRoutes[0]?.name || savedRoutes[0] || null,
+        entriesCount: list.length,
+        lastEntryAt: last ? last.date.toISOString() : null,
+      });
+    } catch (e) {
+      console.error('Error actualizando screen state (Route):', e);
     }
   };
 
@@ -116,7 +140,7 @@ const RouteScreen = ({ navigation }: any) => {
     }
   };
 
-  const addEntry = () => {
+  const addEntry = async () => {
     if (!newEntry.trim() && !selectedImage) return;
     const entry: JournalEntry = {
       id: Date.now().toString(),
@@ -124,10 +148,17 @@ const RouteScreen = ({ navigation }: any) => {
       date: new Date(date),
       image: selectedImage || undefined,
     };
-    setEntries([entry, ...entries]);
+    setEntries(prev => [entry, ...prev]);
     setNewEntry('');
     setSelectedImage(null);
     setDate(new Date());
+
+    // (Opcional) registra en historial para trazabilidad
+    await agentService.recordAppAction('Entrada agregada en Rutas', 'RouteScreen', {
+      text: entry.text || '',
+      image: !!entry.image,
+      at: entry.date.toISOString(),
+    });
   };
 
   const deleteEntry = (id: string) => {
@@ -153,7 +184,7 @@ const RouteScreen = ({ navigation }: any) => {
     </View>
   );
 
-  // Nueva integración conexion con agente
+  // ---------- Integración con agente (rutas/viajes existentes) ----------
   const loadRouteData = async () => {
     try {
       const routes = await cargarRutasGuardadas();
@@ -161,12 +192,13 @@ const RouteScreen = ({ navigation }: any) => {
       setSavedRoutes(routes);
       setRecentTrips(trips);
 
+      // Guardar estado base (sin entradas). Las entradas se agregan en updateAgentRouteState()
       await agentService.saveScreenState('Route', {
-        routes: routes,
+        routes,
         recentTrips: trips,
         totalRoutes: routes.length,
         totalDistance: calcularDistanciaTotal(trips),
-        favoriteRoute: routes[0] || null,
+        favorite: routes[0]?.name || routes[0] || null,
       });
     } catch (error) {
       console.error('Error loading route data:', error);
@@ -176,12 +208,10 @@ const RouteScreen = ({ navigation }: any) => {
   // Guardar una nueva ruta (ejemplo)
   const saveNewRoute = async (route: any) => {
     // Lógica para guardar la ruta (no incluida aquí)
-
-    // Reporte agente
     await agentService.recordAppAction('Nueva ruta guardada', 'RouteScreen', {
       name: route.name,
       distance: route.distance,
-      waypoints: route.waypoints.length,
+      waypoints: route.waypoints?.length || 0,
     });
   };
 
@@ -201,7 +231,7 @@ const RouteScreen = ({ navigation }: any) => {
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
       <SafeAreaView style={styles.safeArea}>
         <LinearGradient
-          colors={['#000000', '#3A0CA3', '#F72585']}
+          colors={['#000000', '#285a01ff', '#0bfc07ff']}
           locations={[0, 0.6, 1]} // Aquí implementamos los porcentajes
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
@@ -213,6 +243,7 @@ const RouteScreen = ({ navigation }: any) => {
           >
             <AntDesign name="double-left" size={30} color="white" style={styles.backButtonIcon} />
           </TouchableOpacity>
+
           <View style={styles.content}>
             <Text style={styles.title}>Mis Rutas</Text>
             <TouchableOpacity style={styles.searchAddressButton} onPress={navigateToSearchAddress}>
@@ -220,6 +251,7 @@ const RouteScreen = ({ navigation }: any) => {
               <Text style={styles.searchAddressText}>Buscar dirección</Text>
             </TouchableOpacity>
           </View>
+
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardAvoidingView}>
             <FlatList
               data={entries}
@@ -229,13 +261,16 @@ const RouteScreen = ({ navigation }: any) => {
               contentContainerStyle={styles.entriesList}
               ListHeaderComponent={<View style={styles.listFooter} />}
             />
+
             <View style={styles.inputContainer}>
               <TouchableOpacity onPress={openCamera} style={styles.mediaButton}>
                 <Ionicons name="camera" size={24} color="white" />
               </TouchableOpacity>
+
               <TouchableOpacity onPress={pickImage} style={styles.mediaButton}>
                 <Ionicons name="image" size={24} color="white" />
               </TouchableOpacity>
+
               <TextInput
                 style={styles.input}
                 value={newEntry}
@@ -244,10 +279,12 @@ const RouteScreen = ({ navigation }: any) => {
                 placeholderTextColor="#aaa"
                 multiline
               />
+
               <TouchableOpacity onPress={addEntry} style={styles.sendButton}>
                 <Ionicons name="send" size={24} color="white" />
               </TouchableOpacity>
             </View>
+
             {selectedImage && (
               <View style={styles.imagePreviewContainer}>
                 <Image source={{ uri: selectedImage }} style={styles.imagePreview} />
@@ -257,7 +294,11 @@ const RouteScreen = ({ navigation }: any) => {
               </View>
             )}
           </KeyboardAvoidingView>
-          {showDatePicker && <DateTimePicker value={date} mode="datetime" display="default" onChange={onChangeDate} />}
+
+          {showDatePicker && (
+            <DateTimePicker value={date} mode="datetime" display="default" onChange={onChangeDate} />
+          )}
+
           <Modal visible={cameraVisible} animationType="slide">
             <CameraComponent ref={cameraRef} onClose={closeCamera} />
             <TouchableOpacity

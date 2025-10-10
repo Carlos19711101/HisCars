@@ -1,4 +1,3 @@
-// screens/ProfileScreen.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -21,62 +20,99 @@ import * as Notifications from 'expo-notifications';
 import styles from './ProfileScreen.styles';
 
 type TabData = {
-  soat: string;       // ISO yyyy-mm-dd o vacío
-  picoyplaca: string; // Ej: 'Lunes'
-  tecnico: string;    // ISO yyyy-mm-dd o vacío
-
-  // extras recordatorios
+  extracontractual: string;
+  contractual: string;
+  soat: string;
+  tecnico: string;
+  
+  // Recordatorios para todos los documentos
+  extracontractualReminderDaysBefore?: number | null;
+  extracontractualNotificationId?: string | null;
+  contractualReminderDaysBefore?: number | null;
+  contractualNotificationId?: string | null;
   soatReminderDaysBefore?: number | null;
   soatNotificationId?: string | null;
   tecnicoReminderDaysBefore?: number | null;
   tecnicoNotificationId?: string | null;
+
+  // Nuevos campos para recordatorios múltiples
+  extracontractualNotificationIds?: string[] | null;
+  contractualNotificationIds?: string[] | null;
+  soatNotificationIds?: string[] | null;
+  tecnicoNotificationIds?: string[] | null;
+  extracontractualDailyWindowDays?: number | null;
+  contractualDailyWindowDays?: number | null;
+  soatDailyWindowDays?: number | null;
+  tecnicoDailyWindowDays?: number | null;
+  extracontractualReminderHour?: number;
+  extracontractualReminderMinute?: number;
+  contractualReminderHour?: number;
+  contractualReminderMinute?: number;
+  soatReminderHour?: number;
+  soatReminderMinute?: number;
+  tecnicoReminderHour?: number;
+  tecnicoReminderMinute?: number;
 };
 
 const ProfileScreen = ({ navigation }: any) => {
   // Estados existentes
-  const [avatar, setAvatar] = useState(require('../../assets/imagen/perfil_Carro.png'));
+  const [avatar, setAvatar] = useState(require('../../assets/imagen/Microbusper.jpg'));
   const [modalVisible, setModalVisible] = useState(false);
 
-  // (Se dejan por compatibilidad, pero ya no se usan para SOAT/Técnico)
-  const [editSoatModalVisible, setEditSoatModalVisible] = useState(false);
-  const [editPicoyplacaModalVisible, setEditPicoyplacaModalVisible] = useState(false);
-  const [editTecnicoModalVisible, setEditTecnicoModalVisible] = useState(false);
-
+  // Datos que se muestran y guardan
   const [tabData, setTabData] = useState<TabData>({
+    extracontractual: '',
+    contractual: '',
     soat: '',
-    picoyplaca: '',
     tecnico: '',
+    extracontractualReminderDaysBefore: null,
+    extracontractualNotificationId: null,
+    contractualReminderDaysBefore: null,
+    contractualNotificationId: null,
     soatReminderDaysBefore: null,
     soatNotificationId: null,
     tecnicoReminderDaysBefore: null,
     tecnicoNotificationId: null,
+    extracontractualNotificationIds: null,
+    contractualNotificationIds: null,
+    soatNotificationIds: null,
+    tecnicoNotificationIds: null,
+    extracontractualDailyWindowDays: null,
+    contractualDailyWindowDays: null,
+    soatDailyWindowDays: null,
+    tecnicoDailyWindowDays: null,
+    extracontractualReminderHour: 9,
+    extracontractualReminderMinute: 0,
+    contractualReminderHour: 9,
+    contractualReminderMinute: 0,
+    soatReminderHour: 9,
+    soatReminderMinute: 0,
+    tecnicoReminderHour: 9,
+    tecnicoReminderMinute: 0,
   });
 
-  // Valores temporales (compatibilidad con antiguos modales de texto)
-  const [editSoatValue, setEditSoatValue] = useState('');
-  const [editPicoyplacaValue, setEditPicoyplacaValue] = useState('');
-  const [editTecnicoValue, setEditTecnicoValue] = useState('');
-
-  // Datos de la moto (sin cambios)
+  // Datos de la moto (solo Marca y Placa)
   const [editMotoModalVisible, setEditMotoModalVisible] = useState(false);
   const [userData, setUserData] = useState({
     Marca: '',
     Placa: '',
-    Propietario: '',
-    Ciudad: '',
   });
   const [editMotoValues, setEditMotoValues] = useState(userData);
 
-  // Picker de fecha y recordatorio
+  // Nuevos estados para calendario y recordatorios
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [activeDocType, setActiveDocType] = useState<'soat' | 'tecnico' | null>(null);
+  const [activeDocType, setActiveDocType] = useState<'extracontractual' | 'contractual' | 'soat' | 'tecnico' | null>(null);
   const [tempDate, setTempDate] = useState<Date>(new Date());
-
   const [showReminderModal, setShowReminderModal] = useState(false);
-  const [pendingDueISO, setPendingDueISO] = useState<string | null>(null); // ISO luego de elegir fecha
+  const [pendingDueISO, setPendingDueISO] = useState<string | null>(null);
 
-  // Modal de días para Pico y Placa
-  const [showPicoDayModal, setShowPicoDayModal] = useState(false);
+  // Hora para recordatorios - CORREGIDO
+  const [reminderTime, setReminderTime] = useState<Date>(() => {
+    const d = new Date();
+    d.setHours(9, 0, 0, 0);
+    return d;
+  });
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   // ------- Helpers -------
   const toISODate = (d: Date) => {
@@ -88,6 +124,218 @@ const ProfileScreen = ({ navigation }: any) => {
 
   const formatYYYYMMDD = (iso: string) => iso;
 
+  // ------- Cargar datos guardados -------
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const userDataString = await AsyncStorage.getItem('@userData');
+        if (userDataString) {
+          const parsedUserData = JSON.parse(userDataString);
+          setUserData(parsedUserData);
+          setEditMotoValues(parsedUserData);
+        }
+        const tabDataString = await AsyncStorage.getItem('@tabData');
+        if (tabDataString) {
+          const saved = JSON.parse(tabDataString);
+          setTabData((prev) => ({
+            ...prev,
+            ...saved,
+          }));
+
+          // Preparar hora - CORREGIDO
+          const h = saved.soatReminderHour ?? 9;
+          const m = saved.soatReminderMinute ?? 0;
+          const d = new Date();
+          d.setHours(h, m, 0, 0);
+          setReminderTime(d);
+        }
+        const avatarUri = await AsyncStorage.getItem('@avatarUri');
+        if (avatarUri) {
+          setAvatar({ uri: avatarUri });
+        }
+      } catch (e) {
+        console.error('Error cargando datos', e);
+      }
+    };
+    loadData();
+  }, []);
+
+  // ------- Notificaciones -------
+  useEffect(() => {
+    const setupNotifications = async () => {
+      try {
+        const perm = await Notifications.getPermissionsAsync();
+        if (perm.status !== 'granted') {
+          await Notifications.requestPermissionsAsync();
+        }
+        if (Platform.OS === 'android') {
+          await Notifications.setNotificationChannelAsync('default', {
+            name: 'default',
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 250, 250, 250],
+            lightColor: '#FF231F7C',
+          });
+        }
+      } catch (e) {
+        console.log('No se pudo preparar notificaciones:', e);
+      }
+    };
+    setupNotifications();
+  }, []);
+
+  const makeDateTrigger = (triggerDate: Date): any => {
+    const anyNotif: any = Notifications as any;
+    const ms = triggerDate.getTime();
+    const dateType =
+      anyNotif?.SchedulableTriggerInputTypes?.DATE ?? 'date';
+    return {
+      type: dateType,
+      date: ms,
+      ...(Platform.OS === 'android' ? { channelId: 'default', allowWhileIdle: true } : {}),
+    } as any;
+  };
+
+  // Cancelar recordatorios previos
+  const cancelPreviousFor = useCallback(async (doc: 'extracontractual' | 'contractual' | 'soat' | 'tecnico') => {
+    try {
+      const ids = 
+        doc === 'extracontractual' ? tabData.extracontractualNotificationIds :
+        doc === 'contractual' ? tabData.contractualNotificationIds :
+        doc === 'soat' ? tabData.soatNotificationIds :
+        tabData.tecnicoNotificationIds;
+      
+      if (ids && ids.length) {
+        await Promise.all(ids.map(id => Notifications.cancelScheduledNotificationAsync(id).catch(() => {})));
+      }
+      
+      const legacyId = 
+        doc === 'extracontractual' ? tabData.extracontractualNotificationId :
+        doc === 'contractual' ? tabData.contractualNotificationId :
+        doc === 'soat' ? tabData.soatNotificationId :
+        tabData.tecnicoNotificationId;
+      
+      if (legacyId) {
+        await Notifications.cancelScheduledNotificationAsync(legacyId).catch(() => {});
+      }
+    } catch {}
+  }, [tabData]);
+
+  // CORREGIDO: Función para aplicar hora sin errores
+  const applyTime = (base: Date, hour: number, minute: number) => {
+    const d = new Date(base);
+    d.setHours(hour, minute, 0, 0);
+    return d;
+  };
+
+  // Programar recordatorio simple
+  const scheduleSingleReminder = useCallback(
+    async ({
+      doc,
+      dueISO,
+      daysBefore,
+      hour,
+      minute,
+    }: {
+      doc: 'extracontractual' | 'contractual' | 'soat' | 'tecnico';
+      dueISO: string;
+      daysBefore: number;
+      hour: number;
+      minute: number;
+    }): Promise<string | null> => {
+      try {
+        await cancelPreviousFor(doc);
+
+        const due = new Date(dueISO + 'T00:00:00');
+        const triggerDate = new Date(due);
+        triggerDate.setDate(triggerDate.getDate() - daysBefore);
+        const finalDate = applyTime(triggerDate, hour, minute);
+
+        if (finalDate.getTime() <= Date.now()) {
+          Alert.alert('Aviso', 'El recordatorio quedó en el pasado. No se programó notificación.');
+          return null;
+        }
+
+        const trigger = makeDateTrigger(finalDate);
+        const docName = 
+          doc === 'extracontractual' ? 'Extracontractual' :
+          doc === 'contractual' ? 'Contractual' :
+          doc === 'soat' ? 'SOAT' :
+          'Técnico Mecánica';
+        
+        const id = await Notifications.scheduleNotificationAsync({
+          content: {
+            title: '📄 Vencimiento de documento',
+            body: `Tu ${docName} vence el ${formatYYYYMMDD(dueISO)}`,
+            sound: true,
+            priority: Notifications.AndroidNotificationPriority.HIGH,
+            data: { doc, dueISO, daysBefore, hour, minute },
+          },
+          trigger,
+        });
+
+        return id;
+      } catch (e) {
+        console.log('Error programando recordatorio simple:', e);
+        return null;
+      }
+    },
+    [cancelPreviousFor]
+  );
+
+  // Programar recordatorios diarios
+  const scheduleDailyWindowReminders = useCallback(
+    async ({
+      doc,
+      dueISO,
+      windowDays,
+      hour,
+      minute,
+    }: {
+      doc: 'extracontractual' | 'contractual' | 'soat' | 'tecnico';
+      dueISO: string;
+      windowDays: 5 | 10 | 15;
+      hour: number;
+      minute: number;
+    }): Promise<string[]> => {
+      const ids: string[] = [];
+      try {
+        await cancelPreviousFor(doc);
+
+        const due = new Date(dueISO + 'T00:00:00');
+        const docName = 
+          doc === 'extracontractual' ? 'Extracontractual' :
+          doc === 'contractual' ? 'Contractual' :
+          doc === 'soat' ? 'SOAT' :
+          'Técnico Mecánica';
+        
+        for (let i = windowDays; i >= 1; i--) {
+          const day = new Date(due);
+          day.setDate(day.getDate() - i);
+          const finalDate = applyTime(day, hour, minute);
+          if (finalDate.getTime() <= Date.now()) continue;
+
+          const trigger = makeDateTrigger(finalDate);
+          const id = await Notifications.scheduleNotificationAsync({
+            content: {
+              title: '⏰ Recordatorio de documento (diario)',
+              body: `${docName} vence el ${formatYYYYMMDD(dueISO)} · Faltan ${i} día(s)`,
+              sound: true,
+              priority: Notifications.AndroidNotificationPriority.HIGH,
+              data: { doc, dueISO, dayOffset: i, hour, minute },
+            },
+            trigger,
+          });
+          ids.push(id);
+        }
+      } catch (e) {
+        console.log('Error programando ventana diaria:', e);
+      }
+      return ids;
+    },
+    [cancelPreviousFor]
+  );
+
+  // ------- Guardar datos -------
   const saveUserData = async (data: typeof userData) => {
     try {
       await AsyncStorage.setItem('@userData', JSON.stringify(data));
@@ -112,154 +360,7 @@ const ProfileScreen = ({ navigation }: any) => {
     }
   };
 
-  // ------- Notificaciones (permiso + canal) -------
-  useEffect(() => {
-    const setupNotifications = async () => {
-      try {
-        const perm = await Notifications.getPermissionsAsync();
-        if (perm.status !== 'granted') {
-          await Notifications.requestPermissionsAsync();
-        }
-        if (Platform.OS === 'android') {
-          await Notifications.setNotificationChannelAsync('default', {
-            name: 'default',
-            importance: Notifications.AndroidImportance.MAX,
-            vibrationPattern: [0, 250, 250, 250],
-            lightColor: '#FF231F7C',
-          });
-        }
-      } catch (e) {
-        console.log('No se pudo preparar notificaciones:', e);
-      }
-    };
-    setupNotifications();
-  }, []);
-
-  /**
-   * Helper COMPATIBLE con varias versiones de expo-notifications:
-   * - Si existe Notifications.SchedulableTriggerInputTypes.DATE, usa el trigger tipado.
-   * - Si no, cae al trigger antiguo { date: ... }.
-   */
-  const makeDateTrigger = (triggerDate: Date): any => {
-    const anyNotif: any = Notifications as any;
-    const ms = triggerDate.getTime();
-
-    // ¿Existe enum de tipos?
-    const dateType =
-      anyNotif?.SchedulableTriggerInputTypes?.DATE ??
-      'date';
-
-    const typed = {
-      type: dateType,
-      date: ms, // número (ms) es aceptado por ambas
-      ...(Platform.OS === 'android' ? { channelId: 'default', allowWhileIdle: true } : {}),
-    };
-
-    // Si tu versión no acepta 'type', este objeto igual funciona porque Expo ignora extras no usados.
-    // De todos modos, por máxima compatibilidad devolvemos el tipado moderno:
-    return typed as any;
-  };
-
-  const scheduleDocReminder = useCallback(
-    async ({
-      doc,
-      dueISO,
-      daysBefore,
-    }: {
-      doc: 'soat' | 'tecnico';
-      dueISO: string;
-      daysBefore: number; // 0,1,3,7
-    }): Promise<string | null> => {
-      try {
-        // Cancela el anterior si existe
-        if (doc === 'soat' && tabData.soatNotificationId) {
-          await Notifications.cancelScheduledNotificationAsync(tabData.soatNotificationId);
-        }
-        if (doc === 'tecnico' && tabData.tecnicoNotificationId) {
-          await Notifications.cancelScheduledNotificationAsync(tabData.tecnicoNotificationId);
-        }
-
-        // Programamos a las 09:00 del día (dueDate - daysBefore)
-        const due = new Date(dueISO + 'T00:00:00');
-        const triggerDate = new Date(due);
-        triggerDate.setDate(triggerDate.getDate() - daysBefore);
-        triggerDate.setHours(9, 0, 0, 0);
-
-        console.log('[Reminder] prepare', {
-          doc,
-          dueISO,
-          daysBefore,
-          triggerDate: triggerDate.toISOString(),
-          now: new Date().toISOString(),
-        });
-
-        if (triggerDate.getTime() <= Date.now()) {
-          Alert.alert('Aviso', 'El recordatorio quedó en el pasado. No se programó notificación.');
-          return null;
-        }
-
-        const trigger = makeDateTrigger(triggerDate);
-
-        const id = await Notifications.scheduleNotificationAsync({
-          content: {
-            title: '📄 Vencimiento de documento',
-            body:
-              doc === 'soat'
-                ? `Tu SOAT vence el ${formatYYYYMMDD(dueISO)}`
-                : `Tu Técnico Mecánica vence el ${formatYYYYMMDD(dueISO)}`,
-            sound: true,
-            priority: Notifications.AndroidNotificationPriority.HIGH,
-            data: { doc, dueISO, daysBefore },
-          },
-          trigger, // ✅ compatible
-        });
-
-        console.log('[Reminder] scheduled', { id });
-
-        return id;
-      } catch (e) {
-        console.log('Error programando recordatorio:', e);
-        return null;
-      }
-    },
-    [tabData.soatNotificationId, tabData.tecnicoNotificationId]
-  );
-
-  // ------- Cargar datos guardados -------
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const userDataString = await AsyncStorage.getItem('@userData');
-        if (userDataString) {
-          const parsedUserData = JSON.parse(userDataString);
-          setUserData(parsedUserData);
-          setEditMotoValues(parsedUserData);
-        }
-
-        const tabDataString = await AsyncStorage.getItem('@tabData');
-        if (tabDataString) {
-          const saved = JSON.parse(tabDataString);
-          setTabData((prev) => ({
-            ...prev,
-            ...saved,
-          }));
-          setEditSoatValue(saved.soat || '');
-          setEditPicoyplacaValue(saved.picoyplaca || '');
-          setEditTecnicoValue(saved.tecnico || '');
-        }
-
-        const avatarUri = await AsyncStorage.getItem('@avatarUri');
-        if (avatarUri) {
-          setAvatar({ uri: avatarUri });
-        }
-      } catch (e) {
-        console.error('Error cargando datos', e);
-      }
-    };
-    loadData();
-  }, []);
-
-  // ------- Cámara / Galería (sin cambios) -------
+  // ------- Funciones para cámara y galería -------
   const openCamera = async () => {
     setModalVisible(false);
     const result = await ImagePicker.launchCameraAsync({
@@ -286,29 +387,7 @@ const ProfileScreen = ({ navigation }: any) => {
     }
   };
 
-  // ------- Guardar ediciones (texto) – compatibilidad -------
-  const handleSaveEditSoat = () => {
-    const newTab = { ...tabData, soat: editSoatValue.trim() || '' };
-    setTabData(newTab);
-    saveTabData(newTab);
-    setEditSoatModalVisible(false);
-  };
-
-  const handleSaveEditPicoyplaca = () => {
-    const newTab = { ...tabData, picoyplaca: editPicoyplacaValue.trim() || '' };
-    setTabData(newTab);
-    saveTabData(newTab);
-    setEditPicoyplacaModalVisible(false);
-  };
-
-  const handleSaveEditTecnico = () => {
-    const newTab = { ...tabData, tecnico: editTecnicoValue.trim() || '' };
-    setTabData(newTab);
-    saveTabData(newTab);
-    setEditTecnicoModalVisible(false);
-  };
-
-  // ------- Editar información de la moto (sin cambios) -------
+  // Editar información de la moto (solo Marca y Placa)
   const handleOpenEditMoto = () => {
     setEditMotoValues(userData);
     setEditMotoModalVisible(true);
@@ -320,11 +399,39 @@ const ProfileScreen = ({ navigation }: any) => {
     setEditMotoModalVisible(false);
   };
 
-  // ------- Fecha y recordatorio -------
-  const openDueDatePicker = (doc: 'soat' | 'tecnico') => {
+  // ------- Nuevas funciones para calendario y recordatorios -------
+  const openDueDatePicker = (doc: 'extracontractual' | 'contractual' | 'soat' | 'tecnico') => {
     setActiveDocType(doc);
-    const prevISO = doc === 'soat' ? tabData.soat : tabData.tecnico;
+    const prevISO = 
+      doc === 'extracontractual' ? tabData.extracontractual :
+      doc === 'contractual' ? tabData.contractual :
+      doc === 'soat' ? tabData.soat :
+      tabData.tecnico;
+    
     setTempDate(prevISO ? new Date(prevISO + 'T00:00:00') : new Date());
+
+    // Pre-cargar hora según doc - CORREGIDO
+    let hour = 9;
+    let minute = 0;
+
+    if (doc === 'extracontractual') {
+      hour = tabData.extracontractualReminderHour ?? 9;
+      minute = tabData.extracontractualReminderMinute ?? 0;
+    } else if (doc === 'contractual') {
+      hour = tabData.contractualReminderHour ?? 9;
+      minute = tabData.contractualReminderMinute ?? 0;
+    } else if (doc === 'soat') {
+      hour = tabData.soatReminderHour ?? 9;
+      minute = tabData.soatReminderMinute ?? 0;
+    } else {
+      hour = tabData.tecnicoReminderHour ?? 9;
+      minute = tabData.tecnicoReminderMinute ?? 0;
+    }
+
+    const t = new Date();
+    t.setHours(hour, minute, 0, 0);
+    setReminderTime(t);
+
     setShowDatePicker(true);
   };
 
@@ -350,49 +457,70 @@ const ProfileScreen = ({ navigation }: any) => {
     setShowReminderModal(true);
   };
 
-  const reminderOptions = [
-    { label: 'Sin recordar', value: null },
-    { label: 'Mismo día 9:00', value: 0 },
-    { label: '1 día antes 9:00', value: 1 },
-    { label: '3 días antes 9:00', value: 3 },
-    { label: '7 días antes 9:00', value: 7 },
-  ] as const;
+  const onTimePicked = (_evt: DateTimePickerEvent, selected?: Date) => {
+    setShowTimePicker(false);
+    if (selected) setReminderTime(selected);
+  };
 
-  const pickReminder = async (daysBefore: number | null) => {
+  // Elegir opción simple de recordatorio
+  const pickSimpleReminder = async (daysBefore: number | null) => {
     if (!activeDocType || !pendingDueISO) {
       setShowReminderModal(false);
       return;
     }
 
     let notificationId: string | null = null;
+    let ids: string[] | null = null;
 
     if (daysBefore !== null) {
-      notificationId = await scheduleDocReminder({
+      const id = await scheduleSingleReminder({
         doc: activeDocType,
         dueISO: pendingDueISO,
         daysBefore,
+        hour: reminderTime.getHours(),
+        minute: reminderTime.getMinutes(),
       });
+      notificationId = id;
     } else {
-      try {
-        if (activeDocType === 'soat' && tabData.soatNotificationId) {
-          await Notifications.cancelScheduledNotificationAsync(tabData.soatNotificationId);
-        }
-        if (activeDocType === 'tecnico' && tabData.tecnicoNotificationId) {
-          await Notifications.cancelScheduledNotificationAsync(tabData.tecnicoNotificationId);
-        }
-      } catch {}
+      await cancelPreviousFor(activeDocType);
     }
 
     const newTab: TabData = { ...tabData };
-    if (activeDocType === 'soat') {
+    
+    if (activeDocType === 'extracontractual') {
+      newTab.extracontractual = pendingDueISO;
+      newTab.extracontractualReminderDaysBefore = daysBefore ?? null;
+      newTab.extracontractualNotificationId = notificationId ?? null;
+      newTab.extracontractualNotificationIds = ids;
+      newTab.extracontractualDailyWindowDays = null;
+      newTab.extracontractualReminderHour = reminderTime.getHours();
+      newTab.extracontractualReminderMinute = reminderTime.getMinutes();
+    } else if (activeDocType === 'contractual') {
+      newTab.contractual = pendingDueISO;
+      newTab.contractualReminderDaysBefore = daysBefore ?? null;
+      newTab.contractualNotificationId = notificationId ?? null;
+      newTab.contractualNotificationIds = ids;
+      newTab.contractualDailyWindowDays = null;
+      newTab.contractualReminderHour = reminderTime.getHours();
+      newTab.contractualReminderMinute = reminderTime.getMinutes();
+    } else if (activeDocType === 'soat') {
       newTab.soat = pendingDueISO;
       newTab.soatReminderDaysBefore = daysBefore ?? null;
       newTab.soatNotificationId = notificationId ?? null;
+      newTab.soatNotificationIds = ids;
+      newTab.soatDailyWindowDays = null;
+      newTab.soatReminderHour = reminderTime.getHours();
+      newTab.soatReminderMinute = reminderTime.getMinutes();
     } else {
       newTab.tecnico = pendingDueISO;
       newTab.tecnicoReminderDaysBefore = daysBefore ?? null;
       newTab.tecnicoNotificationId = notificationId ?? null;
+      newTab.tecnicoNotificationIds = ids;
+      newTab.tecnicoDailyWindowDays = null;
+      newTab.tecnicoReminderHour = reminderTime.getHours();
+      newTab.tecnicoReminderMinute = reminderTime.getMinutes();
     }
+    
     setTabData(newTab);
     await saveTabData(newTab);
 
@@ -404,27 +532,78 @@ const ProfileScreen = ({ navigation }: any) => {
       'Guardado',
       daysBefore === null
         ? 'Fecha guardada sin recordatorio.'
-        : 'Fecha y recordatorio programados correctamente.'
+        : 'Recordatorio programado correctamente.'
     );
   };
 
-  // ------- Pico y Placa -------
-  const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+  // Elegir opción de recordatorio diario
+  const pickDailyWindow = async (windowDays: 5 | 10 | 15) => {
+    if (!activeDocType || !pendingDueISO) {
+      setShowReminderModal(false);
+      return;
+    }
 
-  const openPicoDaySelector = () => setShowPicoDayModal(true);
+    const ids = await scheduleDailyWindowReminders({
+      doc: activeDocType,
+      dueISO: pendingDueISO,
+      windowDays,
+      hour: reminderTime.getHours(),
+      minute: reminderTime.getMinutes(),
+    });
 
-  const pickPicoDay = async (day: string) => {
-    const newTab = { ...tabData, picoyplaca: day };
+    const newTab: TabData = { ...tabData };
+    
+    if (activeDocType === 'extracontractual') {
+      newTab.extracontractual = pendingDueISO;
+      newTab.extracontractualNotificationIds = ids;
+      newTab.extracontractualNotificationId = null;
+      newTab.extracontractualReminderDaysBefore = null;
+      newTab.extracontractualDailyWindowDays = windowDays;
+      newTab.extracontractualReminderHour = reminderTime.getHours();
+      newTab.extracontractualReminderMinute = reminderTime.getMinutes();
+    } else if (activeDocType === 'contractual') {
+      newTab.contractual = pendingDueISO;
+      newTab.contractualNotificationIds = ids;
+      newTab.contractualNotificationId = null;
+      newTab.contractualReminderDaysBefore = null;
+      newTab.contractualDailyWindowDays = windowDays;
+      newTab.contractualReminderHour = reminderTime.getHours();
+      newTab.contractualReminderMinute = reminderTime.getMinutes();
+    } else if (activeDocType === 'soat') {
+      newTab.soat = pendingDueISO;
+      newTab.soatNotificationIds = ids;
+      newTab.soatNotificationId = null;
+      newTab.soatReminderDaysBefore = null;
+      newTab.soatDailyWindowDays = windowDays;
+      newTab.soatReminderHour = reminderTime.getHours();
+      newTab.soatReminderMinute = reminderTime.getMinutes();
+    } else {
+      newTab.tecnico = pendingDueISO;
+      newTab.tecnicoNotificationIds = ids;
+      newTab.tecnicoNotificationId = null;
+      newTab.tecnicoReminderDaysBefore = null;
+      newTab.tecnicoDailyWindowDays = windowDays;
+      newTab.tecnicoReminderHour = reminderTime.getHours();
+      newTab.tecnicoReminderMinute = reminderTime.getMinutes();
+    }
+    
     setTabData(newTab);
     await saveTabData(newTab);
-    setShowPicoDayModal(false);
+
+    setShowReminderModal(false);
+    setPendingDueISO(null);
+    setActiveDocType(null);
+
+    Alert.alert(
+      'Guardado',
+      ids.length
+        ? `Programado: 1 recordatorio por día durante los últimos ${windowDays} días.`
+        : 'No se programaron recordatorios (todas las fechas quedaron en el pasado).'
+    );
   };
 
-  // ------- UI -------
-  const rightLabelFor = (key: 'soat' | 'tecnico' | 'picoyplaca') => {
-    if (key === 'picoyplaca') {
-      return tabData.picoyplaca ? tabData.picoyplaca : 'Editar';
-    }
+  // Helper para mostrar labels
+  const rightLabelFor = (key: 'extracontractual' | 'contractual' | 'soat' | 'tecnico') => {
     const iso = tabData[key];
     if (!iso) return 'Editar';
     return `Vence ${formatYYYYMMDD(iso)}`;
@@ -432,10 +611,13 @@ const ProfileScreen = ({ navigation }: any) => {
 
   return (
     <>
-      <StatusBar translucent={true} backgroundColor="transparent" barStyle="light-content" />
+      <StatusBar
+        translucent={true}
+        backgroundColor="transparent"
+        barStyle="light-content"
+      />
       <LinearGradient
-        colors={['#000000', '#3A0CA3', '#F72585']}
-        locations={[0, 0.6, 1]} // Aquí implementamos los porcentajes
+        colors={['#0b3a01', '#2a9508', '#66f338']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.container}
@@ -445,14 +627,24 @@ const ProfileScreen = ({ navigation }: any) => {
           contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}
         >
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Todo')}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.navigate('Todo')}
+          >
             <AntDesign name="double-left" size={34} color="#fff" />
           </TouchableOpacity>
 
           <View style={styles.header}>
             <View style={styles.avatarContainer}>
-              <Image source={avatar} style={styles.avatar} resizeMode="cover" />
-              <TouchableOpacity style={styles.editAvatarButton} onPress={() => setModalVisible(true)}>
+              <Image
+                source={avatar}
+                style={styles.avatar}
+                resizeMode="cover"
+              />
+              <TouchableOpacity
+                style={styles.editAvatarButton}
+                onPress={() => setModalVisible(true)}
+              >
                 <Text style={styles.editAvatarButtonText}>✏️</Text>
               </TouchableOpacity>
             </View>
@@ -466,13 +658,37 @@ const ProfileScreen = ({ navigation }: any) => {
             <View style={styles.centeredInfoContainer}>
               <Text style={styles.resultText}>{userData.Marca}</Text>
               <Text style={styles.resultText}>{userData.Placa}</Text>
-              <Text style={styles.resultText}>{userData.Propietario}</Text>
-              <Text style={styles.resultText}>{userData.Ciudad}</Text>
             </View>
           </View>
 
           <View style={styles.verticalButtonRow}>
-            {/* SOAT */}
+            {/* Extracontractual - CON CALENDARIO */}
+            <View style={styles.buttonWithResult}>
+              <TouchableOpacity
+                style={[styles.editButtonCompact, styles.editButtonCompact]}
+                onPress={() => openDueDatePicker('extracontractual')}
+              >
+                <Text style={[styles.editButtonText]}>Extracontractual</Text>
+              </TouchableOpacity>
+              <Text style={styles.resultTextRight}>
+                {rightLabelFor('extracontractual')}
+              </Text>
+            </View>
+
+            {/* Contractual - CON CALENDARIO */}
+            <View style={styles.buttonWithResult}>
+              <TouchableOpacity
+                style={[styles.editButtonCompact, styles.editButtonCompact]}
+                onPress={() => openDueDatePicker('contractual')}
+              >
+                <Text style={[styles.editButtonText]}>Contractual</Text>
+              </TouchableOpacity>
+              <Text style={styles.resultTextRight}>
+                {rightLabelFor('contractual')}
+              </Text>
+            </View>
+
+            {/* SOAT - CON CALENDARIO */}
             <View style={styles.buttonWithResult}>
               <TouchableOpacity
                 style={styles.editButtonCompact}
@@ -480,21 +696,12 @@ const ProfileScreen = ({ navigation }: any) => {
               >
                 <Text style={styles.editButtonText}>Vence Soat</Text>
               </TouchableOpacity>
-              <Text style={styles.resultTextRight}>{rightLabelFor('soat')}</Text>
+              <Text style={styles.resultTextRight}>
+                {rightLabelFor('soat')}
+              </Text>
             </View>
 
-            {/* Pico y Placa */}
-            <View style={styles.buttonWithResult}>
-              <TouchableOpacity
-                style={styles.editButtonCompact}
-                onPress={openPicoDaySelector}
-              >
-                <Text style={styles.editButtonText}>Pico y Placa</Text>
-              </TouchableOpacity>
-              <Text style={styles.resultTextRight}>{rightLabelFor('picoyplaca')}</Text>
-            </View>
-
-            {/* Técnico Mecánica */}
+            {/* Técnico Mecánica - CON CALENDARIO */}
             <View style={styles.buttonWithResult}>
               <TouchableOpacity
                 style={styles.editButtonCompact}
@@ -502,11 +709,15 @@ const ProfileScreen = ({ navigation }: any) => {
               >
                 <Text style={styles.editButtonText}>Técnico Mecánica</Text>
               </TouchableOpacity>
-              <Text style={styles.resultTextRight}>{rightLabelFor('tecnico')}</Text>
+              <Text style={styles.resultTextRight}>
+                {rightLabelFor('tecnico')}
+              </Text>
             </View>
           </View>
 
-          {/* Modal selección de imagen (sin cambios) */}
+          {/* Modales */}
+
+          {/* Modal para seleccionar imagen */}
           <Modal
             visible={modalVisible}
             transparent
@@ -531,7 +742,7 @@ const ProfileScreen = ({ navigation }: any) => {
             </View>
           </Modal>
 
-          {/* Modales de texto (compatibilidad) */}
+          {/* Modal para editar información del vehiculo (solo Marca y Placa) */}
           <Modal
             visible={editMotoModalVisible}
             transparent
@@ -540,43 +751,26 @@ const ProfileScreen = ({ navigation }: any) => {
           >
             <View style={styles.editModalOverlay}>
               <View style={styles.editModalContent}>
-                <Text style={styles.editModalTitle}>Editar Información de la Moto</Text>
+                <Text style={styles.editModalTitle}>Editar Información</Text>
                 <TextInput
                   style={styles.editModalInput}
                   value={editMotoValues.Marca}
-                  onChangeText={(text) => setEditMotoValues((prev) => ({ ...prev, Marca: text }))}
+                  onChangeText={text => setEditMotoValues(prev => ({ ...prev, Marca: text }))}
                   placeholder="Marca"
                   placeholderTextColor="#888"
                 />
                 <TextInput
                   style={styles.editModalInput}
                   value={editMotoValues.Placa}
-                  onChangeText={(text) => setEditMotoValues((prev) => ({ ...prev, Placa: text }))}
+                  onChangeText={text => setEditMotoValues(prev => ({ ...prev, Placa: text }))}
                   placeholder="Placa"
-                  placeholderTextColor="#888"
-                />
-                <TextInput
-                  style={styles.editModalInput}
-                  value={editMotoValues.Propietario}
-                  onChangeText={(text) => setEditMotoValues((prev) => ({ ...prev, Propietario: text }))}
-                  placeholder="Propietario"
-                  placeholderTextColor="#888"
-                />
-                <TextInput
-                  style={styles.editModalInput}
-                  value={editMotoValues.Ciudad}
-                  onChangeText={(text) => setEditMotoValues((prev) => ({ ...prev, Ciudad: text }))}
-                  placeholder="Ciudad"
                   placeholderTextColor="#888"
                 />
                 <View style={styles.editModalButtonRow}>
                   <TouchableOpacity style={styles.editModalSaveButton} onPress={handleSaveEditMoto}>
                     <Text style={styles.editModalSaveButtonText}>Guardar</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.editModalCancelButton}
-                    onPress={() => setEditMotoModalVisible(false)}
-                  >
+                  <TouchableOpacity style={styles.editModalCancelButton} onPress={() => setEditMotoModalVisible(false)}>
                     <Text style={styles.editModalCancelButtonText}>Cancelar</Text>
                   </TouchableOpacity>
                 </View>
@@ -584,103 +778,9 @@ const ProfileScreen = ({ navigation }: any) => {
             </View>
           </Modal>
 
-          <Modal
-            visible={editSoatModalVisible}
-            transparent
-            animationType="fade"
-            onRequestClose={() => setEditSoatModalVisible(false)}
-          >
-            <View style={styles.editModalOverlay}>
-              <View style={styles.editModalContent}>
-                <Text style={styles.editModalTitle}>Vencimiento Soat</Text>
-                <TextInput
-                  style={styles.editModalInput}
-                  value={editSoatValue}
-                  onChangeText={setEditSoatValue}
-                  multiline
-                  placeholder="Escribe aquí..."
-                  placeholderTextColor="#888"
-                />
-                <View style={styles.editModalButtonRow}>
-                  <TouchableOpacity style={styles.editModalSaveButton} onPress={handleSaveEditSoat}>
-                    <Text style={styles.editModalSaveButtonText}>Guardar</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.editModalCancelButton}
-                    onPress={() => setEditSoatModalVisible(false)}
-                  >
-                    <Text style={styles.editModalCancelButtonText}>Cancelar</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </Modal>
+          {/* NUEVOS MODALES PARA CALENDARIO Y RECORDATORIOS */}
 
-          <Modal
-            visible={editPicoyplacaModalVisible}
-            transparent
-            animationType="fade"
-            onRequestClose={() => setEditPicoyplacaModalVisible(false)}
-          >
-            <View style={styles.editModalOverlay}>
-              <View style={styles.editModalContent}>
-                <Text style={styles.editModalTitle}>Pico y Placa</Text>
-                <TextInput
-                  style={styles.editModalInput}
-                  value={editPicoyplacaValue}
-                  onChangeText={setEditPicoyplacaValue}
-                  multiline
-                  placeholder="Escribe aquí..."
-                  placeholderTextColor="#888"
-                />
-                <View style={styles.editModalButtonRow}>
-                  <TouchableOpacity style={styles.editModalSaveButton} onPress={handleSaveEditPicoyplaca}>
-                    <Text style={styles.editModalSaveButtonText}>Guardar</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.editModalCancelButton}
-                    onPress={() => setEditPicoyplacaModalVisible(false)}
-                  >
-                    <Text style={styles.editModalCancelButtonText}>Cancelar</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </Modal>
-
-          <Modal
-            visible={editTecnicoModalVisible}
-            transparent
-            animationType="fade"
-            onRequestClose={() => setEditTecnicoModalVisible(false)}
-          >
-            <View style={styles.editModalOverlay}>
-              <View style={styles.editModalContent}>
-                <Text style={styles.editModalTitle}>Vencimiento Técnico Mecánica</Text>
-                <TextInput
-                  style={styles.editModalInput}
-                  value={editTecnicoValue}
-                  onChangeText={setEditTecnicoValue}
-                  multiline
-                  placeholder="Escribe aquí..."
-                  placeholderTextColor="#888"
-                />
-                <View style={styles.editModalButtonRow}>
-                  <TouchableOpacity style={styles.editModalSaveButton} onPress={handleSaveEditTecnico}>
-                    <Text style={styles.editModalSaveButtonText}>Guardar</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.editModalCancelButton}
-                    onPress={() => setEditTecnicoModalVisible(false)}
-                  >
-                    <Text style={styles.editModalCancelButtonText}>Cancelar</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </Modal>
-
-          {/* Date Picker SOAT / Técnico */}
+          {/* Date Picker para todos los documentos */}
           {showDatePicker && (
             <Modal
               visible={showDatePicker}
@@ -691,7 +791,10 @@ const ProfileScreen = ({ navigation }: any) => {
               <View style={styles.editModalOverlay}>
                 <View style={styles.editModalContent}>
                   <Text style={styles.editModalTitle}>
-                    {activeDocType === 'soat' ? 'Elige fecha de vencimiento SOAT' : 'Elige fecha de vencimiento Técnico'}
+                    {activeDocType === 'extracontractual' ? 'Elige fecha de vencimiento Extracontractual' : 
+                     activeDocType === 'contractual' ? 'Elige fecha de vencimiento Contractual' :
+                     activeDocType === 'soat' ? 'Elige fecha de vencimiento SOAT' :
+                     'Elige fecha de vencimiento Técnico Mecánica'}
                   </Text>
 
                   <DateTimePicker
@@ -719,7 +822,7 @@ const ProfileScreen = ({ navigation }: any) => {
             </Modal>
           )}
 
-          {/* Selector de recordatorio */}
+          {/* Modal de recordatorios */}
           <Modal
             visible={showReminderModal}
             transparent
@@ -729,21 +832,79 @@ const ProfileScreen = ({ navigation }: any) => {
             <View style={styles.editModalOverlay}>
               <View style={styles.editModalContent}>
                 <Text style={styles.editModalTitle}>Recordatorio</Text>
-                {[
-                  { label: 'Sin recordar', value: null },
-                  { label: 'Mismo día 9:00', value: 0 },
-                  { label: '1 día antes 9:00', value: 1 },
-                  { label: '3 días antes 9:00', value: 3 },
-                  { label: '7 días antes 9:00', value: 7 },
-                ].map((opt) => (
-                  <TouchableOpacity
-                    key={String(opt.value)}
-                    style={{ paddingVertical: 12, alignItems: 'center' }}
-                    onPress={() => pickReminder(opt.value as number | null)}
-                  >
-                    <Text style={{ fontSize: 16, fontWeight: '600', color: '#090FFA' }}>{opt.label}</Text>
+
+                {/* Hora seleccionada */}
+                <View style={{ alignItems: 'center', marginBottom: 10 }}>
+                  <Text style={{ fontSize: 14, color: '#666', marginBottom: 8 }}>
+                    Hora actual: {reminderTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </Text>
+                  <TouchableOpacity onPress={() => setShowTimePicker(true)} style={styles.editModalSaveButton}>
+                    <Text style={styles.editModalSaveButtonText}>Cambiar hora</Text>
                   </TouchableOpacity>
-                ))}
+                </View>
+
+                {showTimePicker && (
+                  <DateTimePicker
+                    value={reminderTime}
+                    mode="time"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={onTimePicked}
+                  />
+                )}
+
+                {/* Diario (uno por día) */}
+                <Text style={{ fontSize: 15, fontWeight: '700', marginTop: 6, marginBottom: 4 }}>Diario (uno por día):</Text>
+                <TouchableOpacity
+                  style={{ paddingVertical: 10, alignItems: 'center' }}
+                  onPress={() => pickDailyWindow(5)}
+                >
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: '#090FFA' }}>
+                    Últimos 5 días (un recordatorio cada día)
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ paddingVertical: 10, alignItems: 'center' }}
+                  onPress={() => pickDailyWindow(10)}
+                >
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: '#090FFA' }}>
+                    Últimos 10 días (un recordatorio cada día)
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ paddingVertical: 10, alignItems: 'center' }}
+                  onPress={() => pickDailyWindow(15)}
+                >
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: '#090FFA' }}>
+                    Últimos 15 días (un recordatorio cada día)
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Separador */}
+                <View style={{ height: 1, backgroundColor: '#eee', marginVertical: 10, width: '100%' }} />
+
+                {/* Una sola vez */}
+                <Text style={{ fontSize: 15, fontWeight: '700', marginBottom: 6 }}>Una sola vez:</Text>
+                <TouchableOpacity style={{ paddingVertical: 8, alignItems: 'center' }} onPress={() => pickSimpleReminder(null)}>
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: '#090FFA' }}>Sin recordar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={{ paddingVertical: 8, alignItems: 'center' }} onPress={() => pickSimpleReminder(0)}>
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: '#090FFA' }}>Mismo día</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={{ paddingVertical: 8, alignItems: 'center' }} onPress={() => pickSimpleReminder(1)}>
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: '#090FFA' }}>1 día antes</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={{ paddingVertical: 8, alignItems: 'center' }} onPress={() => pickSimpleReminder(3)}>
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: '#090FFA' }}>3 días antes</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={{ paddingVertical: 8, alignItems: 'center' }} onPress={() => pickSimpleReminder(7)}>
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: '#090FFA' }}>7 días antes</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={{ paddingVertical: 8, alignItems: 'center' }} onPress={() => pickSimpleReminder(10)}>
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: '#090FFA' }}>10 días antes</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={{ paddingVertical: 8, alignItems: 'center' }} onPress={() => pickSimpleReminder(15)}>
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: '#090FFA' }}>15 días antes</Text>
+                </TouchableOpacity>
 
                 <View style={styles.editModalButtonRow}>
                   <TouchableOpacity
@@ -754,39 +915,7 @@ const ProfileScreen = ({ navigation }: any) => {
                       setActiveDocType(null);
                     }}
                   >
-                    <Text style={styles.editModalCancelButtonText}>Cancelar</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </Modal>
-
-          {/* Selector de día Pico y Placa */}
-          <Modal
-            visible={showPicoDayModal}
-            transparent
-            animationType="fade"
-            onRequestClose={() => setShowPicoDayModal(false)}
-          >
-            <View style={styles.editModalOverlay}>
-              <View style={styles.editModalContent}>
-                <Text style={styles.editModalTitle}>Día de Pico y Placa</Text>
-                {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((day) => (
-                  <TouchableOpacity
-                    key={day}
-                    style={{ paddingVertical: 12, alignItems: 'center' }}
-                    onPress={() => pickPicoDay(day)}
-                  >
-                    <Text style={{ fontSize: 16, fontWeight: '600', color: '#090FFA' }}>{day}</Text>
-                  </TouchableOpacity>
-                ))}
-
-                <View style={styles.editModalButtonRow}>
-                  <TouchableOpacity
-                    style={styles.editModalCancelButton}
-                    onPress={() => setShowPicoDayModal(false)}
-                  >
-                    <Text style={styles.editModalCancelButtonText}>Cancelar</Text>
+                    <Text style={styles.editModalCancelButtonText}>Cerrar</Text>
                   </TouchableOpacity>
                 </View>
               </View>

@@ -128,7 +128,7 @@ const InfoScreen = () => {
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       
       <LinearGradient
-        colors={['#000000', '#3A0CA3', '#F72585']}
+        colors={['#000000', '#285a01ff', '#0bfc07ff']}
           locations={[0, 0.6, 1]} // Aquí implementamos los porcentajes
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
@@ -170,6 +170,26 @@ const InfoScreen = () => {
                 <Text style={styles.heroTitle}>Creemos una Historia Juntos</Text>
                 <Text style={styles.heroSubtitle}>
                   La aplicación completa para gestionar y mantener el expediente de tu Vehículo.
+                </Text>
+              </LinearGradient>
+            </ImageBackground>
+          </View>
+               <View style={styles.heroSection}>
+            <ImageBackground
+              source={require('../../assets/imagenTargeta/AgenteInteligente.png')} // Imagen de fondo para el hero
+              style={styles.heroCard}
+              imageStyle={styles.heroCardImage}
+              resizeMode="cover"
+            >
+              <LinearGradient
+                colors={['rgba(249, 248, 250, 0)', 'rgba(249, 249, 250, 0)', 'rgba(242, 249, 248, 0)']}
+                style={styles.heroOverlay}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Text style={styles.heroTitle}></Text>
+                <Text style={styles.heroSubtitle1}>
+                  ¡Hola! Soy tu Agente Inteligente, diseñado para asitirte en algunas preguntas y respuestas informativas y frecuentes.
                 </Text>
               </LinearGradient>
             </ImageBackground>
@@ -328,7 +348,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   heroTitle: {
-    color: '#ffffff',
+    color: '#ffffffff',
     top: -50,
     fontSize: 24,
     fontWeight: 'bold',
@@ -336,8 +356,15 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   heroSubtitle: {
-    color: 'rgba(40, 249, 3, 1)',
-    top: -30,
+    color: 'rgba(245, 249, 244, 1)',
+    top: 20,
+    fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  heroSubtitle1: {
+    color: 'rgba(244, 246, 243, 1)',
+    top: 60,
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 22,

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "HisCar",
-    "slug": "historia-vehiculo",
+    "name": "HisMicro",
+    "slug": "historia-vehiculo-pasajeros-micro",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,8 +16,8 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow HisMoto to access your camera",
-          "microphonePermission": "Allow HisMoto to access your microphone",
+          "cameraPermission": "Allow HisMicro to access your camera",
+          "microphonePermission": "Allow HisMicro to access your microphone",
           "recordAudioAndroid": true
         }
       ]
@@ -35,7 +35,7 @@
         "foregroundImage": "./assets/icon-adactative.png",
         "backgroundColor": "#00000000"
       },
-      "package": "com.carlosvelez.hiscars",
+      "package": "com.carlosvelez.hismicro",
       "versionCode": 2,
       "permissions": [
         "android.permission.CAMERA",
@@ -52,7 +52,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "f4ef5a45-da0f-42af-b4fc-cd05f0188750"
+        "projectId": "5b14e6ce-7d79-49bf-ad0d-f09cc0379748"
       }
     }
   }

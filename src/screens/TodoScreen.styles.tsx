@@ -50,7 +50,7 @@ const styles = StyleSheet.create<Styles>({
     shadowRadius: 3.84,
   },
   addButton2: {
-      position: 'absolute',
+    position: 'absolute',
     top: 2,
     right: 2,
     bottom: 30,
@@ -66,7 +66,7 @@ const styles = StyleSheet.create<Styles>({
     shadowRadius: 3.84,
   },
   addButton3: {
-      position: 'absolute',
+    position: 'absolute',
     top: 1,
     right: 200,
     bottom: 30,
@@ -82,7 +82,7 @@ const styles = StyleSheet.create<Styles>({
     shadowRadius: 3.84,
   },
   addButton4: {
-      position: 'absolute',
+    position: 'absolute',
     top: 10,
     right: 5,
     bottom: 30,
@@ -98,8 +98,8 @@ const styles = StyleSheet.create<Styles>({
     shadowRadius: 3.84,
   },
   container: {
-    height: 400,
-    marginVertical: 80,
+    height: '70%',
+    marginVertical: 'auto',
     overflow: 'hidden',
   },
   content: {
@@ -107,7 +107,7 @@ const styles = StyleSheet.create<Styles>({
     alignItems: 'center',
     width: '100%',
   },
-   content1: {
+  content1: {
     padding: 10,
     alignItems: 'center',
     width: '100%',
@@ -116,12 +116,12 @@ const styles = StyleSheet.create<Styles>({
     alignItems: 'center',
   },
   card: {
-    height: 420,
-    width: 420,
+    height: '100%',
+    width: 'auto',
     borderRadius: 20,
     justifyContent: 'flex-end', // Cambiado para alinear el texto al fondo
     alignItems: 'center',
-    shadowColor: '#010101ff',
+    shadowColor: '#0e0e0e',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,

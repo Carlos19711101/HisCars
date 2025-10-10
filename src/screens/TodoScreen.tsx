@@ -197,9 +197,10 @@ const TodoScreen: React.FC<TodoScreenProps> = ({ navigation }) => {
       />
       
       <LinearGradient 
-        colors={['#1A2980', '#26D0CE']}
-        start={{ x: 0.1, y: 0.1 }}
-        end={{ x: 0.9, y: 0.9 }}
+        colors={['#000000', '#285a01ff', '#0bfc07ff']}
+          locations={[0, 0.6, 1]} // Aquí implementamos los porcentajes
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
         style={[styles.containerGlobal, { paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }]}
       >
         <TouchableOpacity 
@@ -278,7 +279,7 @@ const TodoScreen: React.FC<TodoScreenProps> = ({ navigation }) => {
                 index * (CARD_WIDTH + SPACING * 2),
                 (index + 1) * (CARD_WIDTH + SPACING * 2),
               ];
-              const scale = scrollX.interpolate({ inputRange, outputRange: [0.8, 0.9, 0.8], extrapolate: 'clamp' });
+              const scale = scrollX.interpolate({ inputRange, outputRange: [0.8, 0.99, 0.8], extrapolate: 'clamp' });
               const opacity = scrollX.interpolate({ inputRange, outputRange: [0.5, 1, 0.5], extrapolate: 'clamp' });
 
               return (
@@ -287,7 +288,7 @@ const TodoScreen: React.FC<TodoScreenProps> = ({ navigation }) => {
                     style={[
                       styles.card,
                       {
-                        width: CARD_WIDTH,
+                        width: CARD_WIDTH ,
                         backgroundColor: card.color,
                         transform: [{ scale }],
                         opacity,

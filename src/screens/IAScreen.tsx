@@ -29,7 +29,7 @@ type RootStackParamList = {
 
 // Prompt especializado en motocicletas
 const IA_PROMPT =
-  'Responde como un experto de talla mundial en motocicletas, con dominio absoluto de la documentación técnica y la reparación de todos sus sistemas. Ofrece explicaciones precisas y completas, pero expresadas con claridad pedagógica, como lo haría un gran profesor. Ahora, responde lo siguiente:';
+  'Responde como un experto de talla mundial en Vehiculos de livianos de baja media y alta gama, con dominio absoluto de la documentación técnica y la reparación de todos sus sistemas. Ofrece explicaciones precisas y completas, pero expresadas con claridad pedagógica, como lo haría un gran profesor. Ahora, responde lo siguiente:';
 
 // URLs de DeepSeek
 const DEEPSEEK_IOS_URL = 'https://apps.apple.com/app/deepseek-chat/id6478312411';
@@ -176,9 +176,10 @@ const IAScreen = () => {
     <>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
       <LinearGradient
-        colors={['#020479ff', '#0eb9e3', '#58fd03']}
-        start={{ x: 0, y: 0.2 }}
-        end={{ x: 1, y: 1 }}
+         colors={['#000000', '#285a01ff', '#0bfc07ff']}
+          locations={[0, 0.6, 1]} // Aquí implementamos los porcentajes
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
         style={[
           styles.container,
           { paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
