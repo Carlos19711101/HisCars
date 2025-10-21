@@ -1,35 +1,54 @@
 {
   "name": "mysimpleapp",
   "version": "1.0.0",
+  "private": true,
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "upgrade": "expo upgrade",
+    "eas": "eas",
+    "prebuild": "expo prebuild",
+    "clean": "rimraf node_modules .expo .gradle android ios package-lock.json yarn.lock pnpm-lock.yaml"
   },
   "dependencies": {
-    "@expo/vector-icons": "^14.0.2",
-    "@react-native-community/datetimepicker": "8.4.1",
-    "@react-navigation/native": "^7.0.18",
-    "@react-navigation/native-stack": "^7.3.2",
-    "@react-navigation/stack": "^7.2.2",
-    "expo-image-picker": "~16.1.4",
-    "expo-linear-gradient": "~14.1.5",
-    "expo-status-bar": "~2.2.3",
-    "react": "19.0.0",
-    "react-native": "0.79.5",
-    "react-native-safe-area-context": "5.4.0",
-    "react-native-screens": "~4.11.1",
-    "@react-native-async-storage/async-storage": "2.1.2",
-    "expo-camera": "~16.1.10"
+    "@expo/vector-icons": "15.0.2",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/datetimepicker": "8.4.4",
+    "@react-navigation/native": "7.0.18",
+    "@react-navigation/native-stack": "7.3.2",
+    "@react-navigation/stack": "7.2.2",
+    "expo": "54.0.7",
+    "expo-asset": "12.0.8",
+    "expo-av": "16.0.7",
+    "expo-calendar": "15.0.7",
+    "expo-camera": "17.0.8",
+    "expo-clipboard": "8.0.7",
+    "expo-image-picker": "17.0.8",
+    "expo-linear-gradient": "15.0.7",
+    "expo-notifications": "0.32.11",
+    "expo-speech": "14.0.7",
+    "expo-status-bar": "3.0.8",
+    "react": "19.1.0",
+    "react-native": "0.81.4",
+    "react-native-calendars": "1.1313.0",
+    "react-native-gesture-handler": "2.28.0",
+    "react-native-google-places-autocomplete": "2.5.7",
+    "react-native-maps": "1.20.1",
+    "react-native-safe-area-context": "5.6.1",
+    "react-native-screens": "4.16.0",
+    "react-native-vector-icons": "10.3.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.2",
-    "@react-native-community/cli": "^15.0.0",
-    "@types/react": "~19.0.10",
-    "expo": "^53.0.19",
-    "typescript": "^5.3.3"
+    "@babel/core": "^7.26.0",
+    "@types/react": "19.1.13",
+    "typescript": "~5.9.2",
+    "rimraf": "5.0.10"
   },
-  "private": true
+  "overrides": {
+    "@expo/vector-icons": "15.0.2",
+    "react-native-safe-area-context": "5.6.1"
+  }
 }

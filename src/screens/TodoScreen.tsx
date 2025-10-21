@@ -134,7 +134,7 @@ const TodoScreen: React.FC<TodoScreenProps> = ({ navigation }) => {
     { id: '2', title: 'Daily', subtitle: '  Agéndate  ', color: 'transparent', screenName: 'Daily', image: localCardImages[1] },
     { id: '3', title: 'Preventive', subtitle: 'Mantenimiento preventivo', color: 'transparent', screenName: 'Preventive', image: localCardImages[2] },
     { id: '4', title: 'Maintenancey', subtitle: 'Mantenimiento \n General ', color: 'transparent', screenName: 'General', image: localCardImages[3] },
-    { id: '5', title: 'Emergency', subtitle: 'Percance \nen la Via', color: 'transparent', screenName: 'Emergency', image: localCardImages[4] },
+    { id: '5', title: 'Combustible', subtitle: 'Control \nCombustible', color: 'transparent', screenName: 'Emergency', image: localCardImages[4] },
     { id: '6', title: 'Route', subtitle: '  Rutas \n  recorridos', color: 'transparent', screenName: 'Route', image: localCardImages[5] },
   ];
 
@@ -278,7 +278,7 @@ const TodoScreen: React.FC<TodoScreenProps> = ({ navigation }) => {
                 index * (CARD_WIDTH + SPACING * 2),
                 (index + 1) * (CARD_WIDTH + SPACING * 2),
               ];
-              const scale = scrollX.interpolate({ inputRange, outputRange: [0.8, 0.9, 0.8], extrapolate: 'clamp' });
+              const scale = scrollX.interpolate({ inputRange, outputRange: [0.8, 0.99, 0.8], extrapolate: 'clamp' });
               const opacity = scrollX.interpolate({ inputRange, outputRange: [0.5, 1, 0.5], extrapolate: 'clamp' });
 
               return (
@@ -287,7 +287,7 @@ const TodoScreen: React.FC<TodoScreenProps> = ({ navigation }) => {
                     style={[
                       styles.card,
                       {
-                        width: CARD_WIDTH,
+                        width: CARD_WIDTH ,
                         backgroundColor: card.color,
                         transform: [{ scale }],
                         opacity,

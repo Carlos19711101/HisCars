@@ -104,6 +104,7 @@ const styles = StyleSheet.create<Styles>({
     backgroundColor: 'white',
   },
   inputContainer: {
+     top: -10,
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,

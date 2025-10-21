@@ -174,6 +174,26 @@ const InfoScreen = () => {
               </LinearGradient>
             </ImageBackground>
           </View>
+               <View style={styles.heroSection}>
+            <ImageBackground
+              source={require('../../assets/imagenTargeta/AgenteInteligente.png')} // Imagen de fondo para el hero
+              style={styles.heroCard}
+              imageStyle={styles.heroCardImage}
+              resizeMode="cover"
+            >
+              <LinearGradient
+                colors={['rgba(249, 248, 250, 0)', 'rgba(249, 249, 250, 0)', 'rgba(242, 249, 248, 0)']}
+                style={styles.heroOverlay}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Text style={styles.heroTitle}></Text>
+                <Text style={styles.heroSubtitle1}>
+                  ¡Hola! Soy tu Agente Inteligente, diseñado para asitirte en algunas preguntas y respuestas informativas y frecuentes.
+                </Text>
+              </LinearGradient>
+            </ImageBackground>
+          </View>
 
           {/* Features Section */}
           <View style={styles.section}>
@@ -328,7 +348,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   heroTitle: {
-    color: '#ffffff',
+    color: '#ffffffff',
     top: -50,
     fontSize: 24,
     fontWeight: 'bold',
@@ -336,8 +356,15 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   heroSubtitle: {
-    color: 'rgba(40, 249, 3, 1)',
+    color: 'rgba(245, 249, 244, 1)',
     top: -30,
+    fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  heroSubtitle1: {
+    color: 'rgba(244, 246, 243, 1)',
+    top: 60,
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 22,

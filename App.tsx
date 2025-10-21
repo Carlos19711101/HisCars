@@ -30,7 +30,7 @@ import AgendaScreen from './src/screens/AgendaScreen';
 import InfoScreen from './src/screens/InfoScreen';
 import ChatBotsScreen from './src/screens/ChatBotsScreen';
 import IAScreen from './src/screens/IAScreen';
-
+import FuelStatsBotScreen from './src/screens/FuelStatsBotScreen';
 // Tipos de rutas
 type RootStackParamList = {
   Welcome: undefined;
@@ -47,6 +47,7 @@ type RootStackParamList = {
   Info: undefined;
   ChatBots: undefined;
   IA: undefined;
+  FuelStatsBot: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -105,6 +106,7 @@ export default function App() {
             <Stack.Screen name="Info" component={InfoScreen} />
             <Stack.Screen name="ChatBots" component={ChatBotsScreen} />
             <Stack.Screen name="IA" component={IAScreen} />
+            <Stack.Screen name="FuelStatsBot" component={FuelStatsBotScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       </View>

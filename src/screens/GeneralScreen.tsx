@@ -1,3 +1,4 @@
+// screens/GeneralScreen.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -18,11 +19,9 @@ import { AntDesign, Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CameraComponent, { CameraComponentRef } from '../components/CameraComponent';
-import styles from '../screens/GeneralScreen,style';
-
+import styles from './GeneralScreen.styles';
 import { agentService } from '../service/agentService';
 
-// Tipos
 type JournalEntry = {
   id: string;
   text: string;
@@ -30,107 +29,88 @@ type JournalEntry = {
   image?: string;
 };
 
-type Service = {
-  id: string;
-  type: string;
-  cost?: number;
-  completed?: boolean;
-  [key: string]: any
-};
-
 const STORAGE_KEY = '@journal_entries_general';
 
 const GeneralScreen = ({ navigation }: any) => {
-  // Bitácora y fotos
+  // Bitácora (igual que Preventive)
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [newEntry, setNewEntry] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+
+  // Cámara
   const [cameraVisible, setCameraVisible] = useState(false);
   const cameraRef = useRef<CameraComponentRef>(null);
 
-  // Servicios para integración agente
-  const [services, setServices] = useState<Service[]>([]);
-
   useEffect(() => {
     loadEntries();
-    loadServices();
   }, []);
 
+  // Guarda automáticamente la bitácora y actualiza el estado del agente “General”
   useEffect(() => {
     saveEntries(entries);
+    updateAgentGeneralState(entries);
   }, [entries]);
 
-  // ------ BITÁCORA ---------
+  // ----- Persistencia -----
   const saveEntries = async (entriesToSave: JournalEntry[]) => {
     try {
-      const jsonValue = JSON.stringify(entriesToSave);
-      await AsyncStorage.setItem(STORAGE_KEY, jsonValue);
+      await AsyncStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(entriesToSave.map(e => ({ ...e, date: e.date.toISOString() })))
+      );
     } catch (e) {
-      console.error('Error guardando entradas:', e);
+      console.error('Error guardando entradas (General):', e);
     }
   };
 
   const loadEntries = async () => {
     try {
       const jsonValue = await AsyncStorage.getItem(STORAGE_KEY);
-      if (jsonValue != null) {
-        const loadedEntries = JSON.parse(jsonValue).map((entry: any) => ({
-          ...entry,
-          date: new Date(entry.date),
+      if (jsonValue) {
+        const loaded: JournalEntry[] = JSON.parse(jsonValue).map((e: any) => ({
+          ...e,
+          date: new Date(e.date),
         }));
-        setEntries(loadedEntries);
+        setEntries(loaded);
       }
     } catch (e) {
-      console.error('Error cargando entradas:', e);
+      console.error('Error cargando entradas (General):', e);
     }
   };
 
-  // ------ SERVICIOS (INTEGRACIÓN agenteService) ------
-  const cargarServicios = async (): Promise<Service[]> => {
-    // Aquí ajustarías para cargar tu lista real de servicios,
-    // por este ejemplo, la simulamos cargando un array vacío:
-    // Puedes reemplazar esta lógica con la carga real de tus servicios desde storage, API, etc.
-    return [];
-  };
-
-  const loadServices = async () => {
+  // ----- Estado para el Agente (resumen de General) -----
+  const updateAgentGeneralState = async (list: JournalEntry[]) => {
     try {
-      const loadedServices = await cargarServicios();
-      setServices(loadedServices);
+      const sorted = [...list].sort((a, b) => b.date.getTime() - a.date.getTime());
+      const last = sorted[0] || null;
 
-      // Analítica/agente
+      // Derivamos "services" del texto (simple, solo para el resumen del agente)
+      const services = list
+        .map(e => (e.text || '').trim())
+        .filter(Boolean)
+        .slice(0, 200);
+
       await agentService.saveScreenState('General', {
-        services: loadedServices,
-        totalServices: loadedServices.length,
-        pending: loadedServices.filter(s => !s.completed).length,
-        lastService: loadedServices[loadedServices.length - 1] || null,
+        services,
+        lastService: last ? last.date.toISOString() : null,
       });
-    } catch (error) {
-      console.error('Error loading services:', error);
+    } catch (e) {
+      console.error('Error actualizando screen state (General):', e);
     }
   };
 
-  const addService = async (newService: Service) => {
-    // Actualizas tu lista de servicios
-    setServices([newService, ...services]);
-    // Analítica/agente
-    await agentService.recordAppAction(
-      'Servicio agregado',
-      'GeneralScreen',
-      { service: newService.type, cost: newService.cost }
-    );
-  };
-
-  // -------- RESTO DE TU FLUJO BITÁCORA Y MEDIA -----------
+  // ----- Media -----
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 1,
     });
-    if (!result.canceled) setSelectedImage(result.assets[0].uri);
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0].uri);
+    }
   };
 
   const openCamera = () => setCameraVisible(true);
@@ -146,6 +126,7 @@ const GeneralScreen = ({ navigation }: any) => {
     }
   };
 
+  // ----- CRUD bitácora -----
   const addEntry = () => {
     if (!newEntry.trim() && !selectedImage) return;
 
@@ -156,7 +137,7 @@ const GeneralScreen = ({ navigation }: any) => {
       image: selectedImage || undefined,
     };
 
-    setEntries([entry, ...entries]);
+    setEntries(prev => [entry, ...prev]);
     setNewEntry('');
     setSelectedImage(null);
     setDate(new Date());
@@ -172,7 +153,7 @@ const GeneralScreen = ({ navigation }: any) => {
           text: 'Eliminar',
           style: 'destructive',
           onPress: () => {
-            setEntries(entries.filter(entry => entry.id !== id));
+            setEntries(prev => prev.filter(e => e.id !== id));
           },
         },
       ]
@@ -189,45 +170,43 @@ const GeneralScreen = ({ navigation }: any) => {
           <Ionicons name="trash" size={20} color="#ff5252" />
         </TouchableOpacity>
       </View>
-      {item.image && (
-        <Image source={{ uri: item.image }} style={styles.entryImage} />
-      )}
-      {item.text && <Text style={styles.entryText}>{item.text}</Text>}
+
+      {item.image && <Image source={{ uri: item.image }} style={styles.entryImage} />}
+      {item.text ? <Text style={styles.entryText}>{item.text}</Text> : null}
       <View style={styles.timelineConnector} />
     </View>
   );
 
   const onChangeDate = (event: any, selectedDate?: Date) => {
     setShowDatePicker(false);
-    if (selectedDate) {
-      setDate(selectedDate);
-    }
+    if (selectedDate) setDate(selectedDate);
   };
 
+  // ----- UI -----
   return (
     <>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
       <LinearGradient
-       colors={['#000000', '#3A0CA3', '#F72585']}
-          locations={[0, 0.6, 1]} // Aquí implementamos los porcentajes
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+        colors={['#000000', '#3A0CA3', '#F72585']}
+        locations={[0, 0.6, 1]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={[
           styles.container,
           { paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
         ]}
       >
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.navigate('Todo')}
-        >
+        {/* Back */}
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Todo')}>
           <AntDesign name="double-left" size={24} color="white" />
         </TouchableOpacity>
 
+        {/* Title */}
         <View style={styles.content}>
           <Text style={styles.title}>Mantenimiento General</Text>
         </View>
 
+        {/* Bitácora (igual a Preventive) */}
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardAvoidingView}
@@ -277,6 +256,7 @@ const GeneralScreen = ({ navigation }: any) => {
           )}
         </KeyboardAvoidingView>
 
+        {/* DateTimePicker (si decides usarlo) */}
         {showDatePicker && (
           <DateTimePicker
             value={date}
@@ -286,6 +266,7 @@ const GeneralScreen = ({ navigation }: any) => {
           />
         )}
 
+        {/* Cámara */}
         <Modal visible={cameraVisible} animationType="slide">
           <CameraComponent ref={cameraRef} onClose={closeCamera} />
           <TouchableOpacity

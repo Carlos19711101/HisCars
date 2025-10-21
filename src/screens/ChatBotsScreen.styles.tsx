@@ -27,8 +27,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 18,
-    paddingHorizontal: 24,
+    paddingVertical: 15,
+    paddingHorizontal: 14,
   },
   headerContent: {
     flex: 1,
@@ -70,15 +70,16 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 8,
     overflow: 'hidden',
   },
   botAvatarImage: {
-    width: 36,
-    height: 36,
+    width: 65,
+    height: 65,
+    borderRadius: 23,
   },
   userAvatar: {
     width: 36,
@@ -140,10 +141,11 @@ const styles = StyleSheet.create({
 
   // NUEVOS ESTILOS PARA BOTONES DE ACCIÓN
   actionButtonsContainer: {
-    right: 10,
-    left: 10,
+    paddingRight: 10,
+    paddingLeft: 35,
+    left: 1,
     top: 5,
-    paddingHorizontal: 19,
+    paddingHorizontal: 50,
     paddingVertical: 6,
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderTopWidth: 1,
