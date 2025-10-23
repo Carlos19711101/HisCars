@@ -115,7 +115,7 @@ const styles = StyleSheet.create<Styles>({
     paddingHorizontal: width * 0.05,
   },
   editButton: {
-    backgroundColor: 'rgba(138, 250, 9, 0.8)',
+    backgroundColor: 'rgba(8, 239, 243, 0.98)',
     paddingVertical: 10,
     paddingHorizontal: 24,
     borderRadius: 20,
@@ -128,7 +128,7 @@ const styles = StyleSheet.create<Styles>({
     elevation: 3,
   },
   editButtonCompact: {
-    backgroundColor: 'rgba(137, 250, 9, 0.8)',
+    backgroundColor: 'rgba(249, 250, 248, 1)',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 20,

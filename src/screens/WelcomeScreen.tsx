@@ -35,10 +35,11 @@ const WelcomeScreen = ({ navigation }: any) => {
       />
       
       <LinearGradient
-        colors={['#1a6103', '#2a9508', '#66f338']}
+        colors={['#000000', '#3A0CA3', '#F72585']}
+          locations={[0, 0.6, 1]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
         style={[styles.container, { paddingTop: STATUS_BAR_HEIGHT }]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
       >
         {/* Botón de salida - Ajustado para considerar el StatusBar */}
         <TouchableOpacity 
