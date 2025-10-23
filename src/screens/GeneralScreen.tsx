@@ -187,10 +187,12 @@ const GeneralScreen = ({ navigation }: any) => {
     <>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
       <LinearGradient
+
         colors={['#000000', '#3A0CA3', '#F72585']}
         locations={[0, 0.6, 1]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
+
         style={[
           styles.container,
           { paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },

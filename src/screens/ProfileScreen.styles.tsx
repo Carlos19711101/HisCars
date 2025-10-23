@@ -1,20 +1,10 @@
-// screens/ProfileScreen.styles.ts
-import {
-  StyleSheet,
-  ViewStyle,
-  TextStyle,
-  ImageStyle,
-  Platform,
-  Dimensions,
-} from 'react-native';
+import { StyleSheet, ViewStyle, TextStyle, ImageStyle, Platform, Dimensions } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 const avatarSize = width * 0.7;
-const editButtonSize = avatarSize * 0.2;
+const editButtonSize = avatarSize * 0.20;
 
-// Interfaz para todos los estilos del componente, ya consolidada.
 interface Styles {
-  // Estilos Principales
   container: ViewStyle;
   contentContainer: ViewStyle;
   header: ViewStyle;
@@ -33,11 +23,6 @@ interface Styles {
   verticalButtonRow: ViewStyle;
   buttonWithResult: ViewStyle;
 
-  // NUEVO: fila interna del botón (texto + icono a la derecha)
-  buttonContentRow: ViewStyle;
-  buttonIconRight: ViewStyle;
-
-  // Estilos para el Modal de Selección de Imagen
   imagePickerModalOverlay: ViewStyle;
   imagePickerModalContent: ViewStyle;
   imagePickerModalOption: ViewStyle;
@@ -45,7 +30,6 @@ interface Styles {
   imagePickerModalCancel: ViewStyle;
   imagePickerModalCancelText: TextStyle;
 
-  // Estilos para Modales de Edición (ya existentes)
   editModalOverlay: ViewStyle;
   editModalContent: ViewStyle;
   editModalTitle: TextStyle;
@@ -55,30 +39,11 @@ interface Styles {
   editModalSaveButtonText: TextStyle;
   editModalCancelButton: ViewStyle;
   editModalCancelButtonText: TextStyle;
-
-  // Footer (ya lo tenías)
   footerContainer: ViewStyle;
   footerContent: ViewStyle;
-
-  // NUEVO: modales para DatePicker / Recordatorios / Días semana
-  pickerModalOverlay: ViewStyle;
-  pickerModalCard: ViewStyle;
-  pickerActionsRow: ViewStyle;
-
-  // NUEVO: chips de recordatorio
-  reminderChipsRow: ViewStyle;
-  chip: ViewStyle;
-  chipSelected: ViewStyle;
-  chipText: TextStyle;
-
-  // NUEVO: grid de días (Pico y Placa)
-  weekdayGrid: ViewStyle;
-  weekdayItem: ViewStyle;
-  weekdayText: TextStyle;
 }
 
 const styles = StyleSheet.create<Styles>({
-  // --- Estilos Principales ---
   container: {
     flex: 1,
   },
@@ -150,7 +115,7 @@ const styles = StyleSheet.create<Styles>({
     paddingHorizontal: width * 0.05,
   },
   editButton: {
-    backgroundColor: '#71e4e9',
+    backgroundColor: 'rgba(138, 250, 9, 0.8)',
     paddingVertical: 10,
     paddingHorizontal: 24,
     borderRadius: 20,
@@ -163,7 +128,7 @@ const styles = StyleSheet.create<Styles>({
     elevation: 3,
   },
   editButtonCompact: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: 'rgba(137, 250, 9, 0.8)',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 20,
@@ -178,11 +143,11 @@ const styles = StyleSheet.create<Styles>({
   editButtonText: {
     fontWeight: '600',
     fontSize: width * 0.038,
-    color: '#333',
+    color: 'rgba(12, 12, 12, 0.8)',
   },
   centeredInfoContainer: {
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 1,
     marginBottom: 8,
   },
   resultText: {
@@ -197,11 +162,11 @@ const styles = StyleSheet.create<Styles>({
     fontSize: width * 0.045,
     color: '#fff',
     fontWeight: 'bold',
-    marginLeft: 15,
+    marginLeft: 10,
     alignSelf: 'center',
   },
   verticalButtonRow: {
-    marginTop: 20,
+    marginTop: 1,
     paddingHorizontal: width * 0.05,
   },
   buttonWithResult: {
@@ -210,18 +175,6 @@ const styles = StyleSheet.create<Styles>({
     marginBottom: 15,
   },
 
-  // NUEVO: contenido del botón (texto + icono derecha)
-  buttonContentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  buttonIconRight: {
-    marginLeft: 8,
-  },
-
-  // --- Estilos para el Modal de Selección de Imagen ---
   imagePickerModalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.3)',
@@ -251,7 +204,6 @@ const styles = StyleSheet.create<Styles>({
     color: '#888',
   },
 
-  // --- Estilos para los Modales de Edición de Texto ---
   editModalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.45)',
@@ -272,7 +224,6 @@ const styles = StyleSheet.create<Styles>({
     fontSize: 20,
     marginBottom: 18,
     textAlign: 'center',
-    color: '#111',
   },
   editModalInput: {
     borderColor: '#ccc',
@@ -314,8 +265,6 @@ const styles = StyleSheet.create<Styles>({
     fontWeight: 'bold',
     fontSize: 16,
   },
-
-  // Footer (ya lo tenías)
   footerContainer: {
     position: 'absolute',
     bottom: 0,
@@ -331,76 +280,6 @@ const styles = StyleSheet.create<Styles>({
     justifyContent: 'space-around',
     width: '100%',
     paddingHorizontal: 20,
-  },
-
-  // --- NUEVO: Modales DatePicker / Recordatorios / Días semana ---
-  pickerModalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  pickerModalCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    width: '100%',
-    maxWidth: 400,
-    elevation: 8,
-  },
-  pickerActionsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 12,
-  },
-
-  // --- NUEVO: Chips de recordatorio ---
-  reminderChipsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 8,
-    marginHorizontal: -4, // para compensar márgenes en chips
-  },
-  chip: {
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.25)',
-    borderRadius: 16,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    marginHorizontal: 4,
-    marginVertical: 4,
-    backgroundColor: '#fff',
-  },
-  chipSelected: {
-    backgroundColor: '#76fd09',
-    borderColor: '#76fd09',
-  },
-  chipText: {
-    color: '#111',
-    fontWeight: '600',
-  },
-
-  // --- NUEVO: Grid de días (Pico y Placa) ---
-  weekdayGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginTop: 10,
-  },
-  weekdayItem: {
-    width: '48%',
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.15)',
-    borderRadius: 10,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  weekdayText: {
-    color: '#111',
-    fontWeight: '600',
   },
 });
 

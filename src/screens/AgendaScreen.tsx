@@ -422,7 +422,7 @@ const AgendaScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#090FFA" />
+      <StatusBar barStyle="light-content" backgroundColor="#transparent" />
       <LinearGradient
         colors={['#000000', '#3A0CA3', '#F72585']}
           locations={[0, 0.6, 1]} // Aquí implementamos los porcentajes

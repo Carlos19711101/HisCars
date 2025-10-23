@@ -1122,10 +1122,12 @@ const ChatBotsScreen = () => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
       <LinearGradient
+
         colors={['#000000', '#3A0CA3', '#F72585']}
         locations={[0.1, 0.6, 0.8]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1.1 }}
+
         style={styles.container}
       >
         {/* Header */}
